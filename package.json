@@ -1,0 +1,444 @@
+{
+  "name": "planekey-trust-layer",
+  "displayName": "PlaneKey Trust Layer",
+  "description": "One download, three surfaces: the PlaneKey toolchain (pk-client, pk-memory, Env-Observer MCP server) bundled into an IDE trust/control layer for AI-built software — use it in the editor, from the CLI, or over MCP.",
+  "version": "0.4.0",
+  "publisher": "planekey",
+  "license": "UNLICENSED",
+  "engines": {
+    "vscode": "^1.101.0"
+  },
+  "categories": [
+    "Other",
+    "Testing",
+    "Linters"
+  ],
+  "keywords": [
+    "AI security",
+    "DevSecOps",
+    "integrity",
+    "PlaneKey",
+    "ConversationChain",
+    "RootRabbit",
+    "RepoGuard",
+    "PixelGuard"
+  ],
+  "main": "./src/extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "configuration": {
+      "title": "PlaneKey",
+      "properties": {
+        "planekey.pkClientPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to pk-client. Leave blank to use the copy BUNDLED with this extension (toolchain/pk-client) — zero-config. Falls back to a `pk-client` on PATH if the bundle is missing."
+        },
+        "planekey.nodePath": {
+          "type": "string",
+          "default": "",
+          "description": "Node.js interpreter used to run the bundled JS tools (pk-client, pk-memory). Leave blank to use 'node' on PATH."
+        },
+        "planekey.projectRoot": {
+          "type": "string",
+          "default": "",
+          "description": "Project root for PlaneKey scans. Leave blank to use the first workspace folder."
+        },
+        "planekey.reportRoot": {
+          "type": "string",
+          "default": "",
+          "description": "PlaneKey reports folder. Leave blank to use <projectRoot>/reports."
+        },
+        "planekey.autoRefreshOnSave": {
+          "type": "boolean",
+          "default": false,
+          "description": "Refresh current file risk after file saves. Does not run heavy scans automatically."
+        },
+        "planekey.defaultBundleName": {
+          "type": "string",
+          "default": "ide-safe-bundle",
+          "description": "Default name used for PlaneKey safe bundles created from the IDE."
+        },
+        "planekey.pkMemoryPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to pk-memory. Leave blank to use the copy BUNDLED with this extension (toolchain/pk-memory) — zero-config. Falls back to a `pk-memory` on PATH if the bundle is missing."
+        },
+        "planekey.pkOperatorPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to pk-operator executable. Leave blank to auto-detect pk-operator.cmd on Windows or pk-operator elsewhere."
+        },
+        "planekey.defaultMemoryName": {
+          "type": "string",
+          "default": "ide-memory",
+          "description": "Default name for TMrFS/Rgano memory reports created from the IDE."
+        },
+        "planekey.mcpServerPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to the PlaneKey Env-Observer MCP server (mcp/planekey_env_observer_server.py). Leave blank to auto-detect under <projectRoot>/mcp/ or a sibling bridge/mcp/."
+        },
+        "planekey.mcpPythonPath": {
+          "type": "string",
+          "default": "",
+          "description": "Python interpreter used to launch the MCP server (needs `pip install 'mcp[cli]' httpx`). Leave blank to use 'python3' (or 'python' on Windows)."
+        },
+        "planekey.homeBridgeUrl": {
+          "type": "string",
+          "default": "https://bridge.planekey.dev",
+          "description": "Home Bridge URL the MCP server reports to (PLANEKEY_HOME_BRIDGE_URL). Point at http://localhost:8080 for local dev."
+        },
+        "planekey.serviceId": {
+          "type": "string",
+          "default": "ide-workspace",
+          "description": "Service id the MCP server tags observations with (PLANEKEY_SERVICE_ID)."
+        },
+        "planekey.environmentId": {
+          "type": "string",
+          "default": "local-dev",
+          "description": "Environment id the MCP server tags observations with (PLANEKEY_ENVIRONMENT_ID)."
+        },
+        "planekey.mcpAllowSubmit": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow the MCP server to submit workspace reports to the Home Bridge (PLANEKEY_MCP_ALLOW_SUBMIT). Off by default — MCP observes and grounds; it does not submit until you opt in."
+        }
+      }
+    },
+    "mcpServerDefinitionProviders": [
+      {
+        "id": "planekey.envObserver",
+        "label": "PlaneKey Env-Observer"
+      }
+    ],
+    "commands": [
+      {
+        "command": "planekey.refreshStatus",
+        "title": "PlaneKey: Refresh Trust Status",
+        "category": "PlaneKey"
+      },
+      {
+        "command": "planekey.runRepoGuard",
+        "title": "PlaneKey: Run RepoGuard",
+        "category": "PlaneKey"
+      },
+      {
+        "command": "planekey.runPixelGuard",
+        "title": "PlaneKey: Run PixelGuard",
+        "category": "PlaneKey"
+      },
+      {
+        "command": "planekey.runResidueMap",
+        "title": "PlaneKey: Run ResidueGuard Map",
+        "category": "PlaneKey"
+      },
+      {
+        "command": "planekey.runRootRabbit",
+        "title": "PlaneKey: Run RootRabbit Scan",
+        "category": "PlaneKey"
+      },
+      {
+        "command": "planekey.runSafetyNet",
+        "title": "PlaneKey: Run SafetyNet",
+        "category": "PlaneKey"
+      },
+      {
+        "command": "planekey.attestDev",
+        "title": "PlaneKey: Attest Dev Layer",
+        "category": "PlaneKey"
+      },
+      {
+        "command": "planekey.createSafeBundle",
+        "title": "PlaneKey: Create Safe Bundle",
+        "category": "PlaneKey"
+      },
+      {
+        "command": "planekey.openReports",
+        "title": "PlaneKey: Open Reports Folder",
+        "category": "PlaneKey"
+      },
+      {
+        "command": "planekey.setPkClientPath",
+        "title": "PlaneKey: Set pk-client Path",
+        "category": "PlaneKey"
+      },
+      {
+        "command": "planekey.setProjectRoot",
+        "title": "PlaneKey: Set Project Root",
+        "category": "PlaneKey"
+      },
+      {
+        "command": "planekey.runMemoryBuild",
+        "title": "PlaneKey: Build TMrFS Memory",
+        "category": "PlaneKey"
+      },
+      {
+        "command": "planekey.runRganoScan",
+        "title": "PlaneKey: Run Rgano Structure Scan",
+        "category": "PlaneKey"
+      },
+      {
+        "command": "planekey.runCanonRank",
+        "title": "PlaneKey: Rank Canon Candidates",
+        "category": "PlaneKey"
+      },
+      {
+        "command": "planekey.runGraftPlan",
+        "title": "PlaneKey: Build Graft Plan",
+        "category": "PlaneKey"
+      },
+      {
+        "command": "planekey.runOperatorDoctor",
+        "title": "PlaneKey: Operator Doctor",
+        "category": "PlaneKey"
+      },
+      {
+        "command": "planekey.openIncident",
+        "title": "PlaneKey: Open Operator Incident",
+        "category": "PlaneKey"
+      },
+      {
+        "command": "planekey.setPkMemoryPath",
+        "title": "PlaneKey: Set pk-memory Path",
+        "category": "PlaneKey"
+      },
+      {
+        "command": "planekey.setPkOperatorPath",
+        "title": "PlaneKey: Set pk-operator Path",
+        "category": "PlaneKey"
+      },
+      {
+        "command": "planekey.runFlightReport",
+        "title": "PlaneKey: Submit Flight Report (to Home Bridge)",
+        "category": "PlaneKey"
+      },
+      {
+        "command": "planekey.runCanonAnalyze",
+        "title": "PlaneKey: Submit Canon Analysis (to Home Bridge)",
+        "category": "PlaneKey"
+      },
+      {
+        "command": "planekey.runForensicsAttribution",
+        "title": "PlaneKey: Submit Forensics Attribution (to Home Bridge)",
+        "category": "PlaneKey"
+      },
+      {
+        "command": "planekey.runRganoPacket",
+        "title": "PlaneKey: Submit Rgano Signature Packet (to Home Bridge)",
+        "category": "PlaneKey"
+      },
+      {
+        "command": "planekey.runRootRabbitHealth",
+        "title": "PlaneKey: Submit RootRabbit Health (to Home Bridge)",
+        "category": "PlaneKey"
+      },
+      {
+        "command": "planekey.runCoherencePack",
+        "title": "PlaneKey: Emit Coherence Pack (60-sec AI grounding)",
+        "category": "PlaneKey"
+      },
+      {
+        "command": "planekey.runTrustState",
+        "title": "PlaneKey: Show Trust State (from provenance/)",
+        "category": "PlaneKey"
+      },
+      {
+        "command": "planekey.runRpgReachable",
+        "title": "PlaneKey: RPG Reachability (route -> target symbol)",
+        "category": "PlaneKey"
+      },
+      {
+        "command": "planekey.runMatrixCarryForward",
+        "title": "PlaneKey: Matrix Carry-Forward (between two versions)",
+        "category": "PlaneKey"
+      },
+      {
+        "command": "planekey.runDecisionsDistribution",
+        "title": "PlaneKey: Decisions Distribution (canon + forensics + route health)",
+        "category": "PlaneKey"
+      },
+      {
+        "command": "planekey.runOperatorReplay",
+        "title": "PlaneKey: Operator Actions Replay (bridge intent log)",
+        "category": "PlaneKey"
+      },
+      {
+        "command": "planekey.setMcpServerPath",
+        "title": "PlaneKey: Set MCP Server Path",
+        "category": "PlaneKey"
+      },
+      {
+        "command": "planekey.refreshMcpServer",
+        "title": "PlaneKey: Refresh MCP Server (re-register with the MCP host)",
+        "category": "PlaneKey"
+      },
+      {
+        "command": "planekey.showCliSetup",
+        "title": "PlaneKey: Show CLI Setup (use the bundled pk-client from your terminal)",
+        "category": "PlaneKey"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "planekey.refreshStatus"
+        },
+        {
+          "command": "planekey.runRepoGuard"
+        },
+        {
+          "command": "planekey.runPixelGuard"
+        },
+        {
+          "command": "planekey.runResidueMap"
+        },
+        {
+          "command": "planekey.runRootRabbit"
+        },
+        {
+          "command": "planekey.runSafetyNet"
+        },
+        {
+          "command": "planekey.attestDev"
+        },
+        {
+          "command": "planekey.createSafeBundle"
+        },
+        {
+          "command": "planekey.openReports"
+        },
+        {
+          "command": "planekey.setPkClientPath"
+        },
+        {
+          "command": "planekey.setProjectRoot"
+        },
+        {
+          "command": "planekey.runMemoryBuild"
+        },
+        {
+          "command": "planekey.runRganoScan"
+        },
+        {
+          "command": "planekey.runCanonRank"
+        },
+        {
+          "command": "planekey.runGraftPlan"
+        },
+        {
+          "command": "planekey.runOperatorDoctor"
+        },
+        {
+          "command": "planekey.openIncident"
+        },
+        {
+          "command": "planekey.setPkMemoryPath"
+        },
+        {
+          "command": "planekey.setPkOperatorPath"
+        },
+        {
+          "command": "planekey.runFlightReport"
+        },
+        {
+          "command": "planekey.runCanonAnalyze"
+        },
+        {
+          "command": "planekey.runForensicsAttribution"
+        },
+        {
+          "command": "planekey.runRganoPacket"
+        },
+        {
+          "command": "planekey.runRootRabbitHealth"
+        },
+        {
+          "command": "planekey.runCoherencePack"
+        },
+        {
+          "command": "planekey.runTrustState"
+        },
+        {
+          "command": "planekey.runRpgReachable"
+        },
+        {
+          "command": "planekey.runMatrixCarryForward"
+        },
+        {
+          "command": "planekey.runDecisionsDistribution"
+        },
+        {
+          "command": "planekey.runOperatorReplay"
+        },
+        {
+          "command": "planekey.setMcpServerPath"
+        },
+        {
+          "command": "planekey.refreshMcpServer"
+        },
+        {
+          "command": "planekey.showCliSetup"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "planekey.runRepoGuard",
+          "group": "planekey@1"
+        },
+        {
+          "command": "planekey.runPixelGuard",
+          "group": "planekey@2"
+        },
+        {
+          "command": "planekey.runSafetyNet",
+          "group": "planekey@3"
+        },
+        {
+          "command": "planekey.runMemoryBuild",
+          "group": "planekey@4"
+        },
+        {
+          "command": "planekey.runRganoScan",
+          "group": "planekey@5"
+        },
+        {
+          "command": "planekey.runOperatorDoctor",
+          "group": "planekey@6"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "planekey.refreshStatus",
+          "group": "planekey@1"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "planekey",
+          "title": "PlaneKey",
+          "icon": "assets/planekey.svg"
+        }
+      ]
+    },
+    "views": {
+      "planekey": [
+        {
+          "id": "planekeyTrustView",
+          "name": "Trust Layer"
+        },
+        {
+          "id": "planekeyActionsView",
+          "name": "Actions"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "smoke": "node -c src/extension.js"
+  }
+}

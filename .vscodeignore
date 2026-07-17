@@ -1,0 +1,19 @@
+# Keep the packaged .vsix lean — ship only the runtime the extension loads.
+.vscode/**
+.git/**
+.gitignore
+**/*.map
+**/*.ts
+**/tsconfig.json
+node_modules/**
+**/.DS_Store
+**/*.vsix
+
+# The .ts sources are legacy siblings — extension.js (the `main`) is
+# self-contained plain JS and does not require them. Ship only what runs.
+src/planekey-init.ts
+src/planekey-integration-glue.ts
+src/planekey-licensing-compliance.ts
+src/planekey-multi-project.ts
+src/planekey-vcs-hooks.ts
+src/planekey-vcs-integration.ts

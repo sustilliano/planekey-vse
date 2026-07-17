@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "planekey-env-observer": {
+      "command": "python",
+      "args": [
+        "mcp/planekey_env_observer_server.py"
+      ],
+      "env": {
+        "PLANEKEY_HOME_BRIDGE_URL": "https://planekey.dev",
+        "PLANEKEY_SERVICE_ID": "customer-product",
+        "PLANEKEY_ENVIRONMENT_ID": "cursor-workspace",
+        "PLANEKEY_WORKSPACE_ROOT": "${workspaceFolder}",
+        "PLANEKEY_MCP_ALLOW_SUBMIT": "false"
+      }
+    }
+  }
+}
