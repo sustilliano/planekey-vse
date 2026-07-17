@@ -1,0 +1,315 @@
+PlaneKey Proprietary End-User License Agreement
+================================================
+
+Copyright (c) 2026 PlaneKey, an Oregon corporation (EIN 42-2868560).
+All rights reserved.
+
+This License Agreement ("Agreement") governs use of the Software, which
+is identified in the LICENSE file at the root of each covered component
+and includes (without limitation) the úknocked encryption library, the
+cosmicid universal identifier system, the uknocked-platform threat
+intelligence service, the PlaneKey Bean substrate, and the configuration
+files declaring PlaneKey's commercial operations.
+
+By accessing, downloading, installing, executing, modifying, or
+incorporating the Software (collectively, "Using"), You agree to be
+bound by this Agreement.
+
+1.  DEFINITIONS
+
+    "PlaneKey" or "Licensor" means PlaneKey, an Oregon corporation.
+
+    "Software" means the source code, object code, configuration files,
+    documentation, schema files, and accompanying materials covered by
+    this Agreement.
+
+    "Active Subscription" means a current, paid PlaneKey subscription
+    (or a written grant from PlaneKey) under which the entitlements
+    table in the PlaneKey Auth DB records You as having a non-expired,
+    non-revoked entitlement covering the Software.
+
+    "You" or "Your" means the individual or legal entity exercising
+    rights under this Agreement.
+
+    "Production Use" means any use of the Software in support of
+    revenue-generating, customer-facing, government-procurement, or
+    mission-critical operations.
+
+2.  LICENSE GRANT
+
+    Subject to Your compliance with this Agreement and Your maintenance
+    of an Active Subscription where required by Section 3, PlaneKey
+    grants You a limited, non-exclusive, non-transferable, non-
+    sublicensable, revocable license to:
+
+    (a) execute the Software in support of Your own use;
+    (b) read the Software's source code for evaluation, audit,
+        compatibility verification, and educational purposes;
+    (c) make a reasonable number of backup or archival copies.
+
+3.  ACTIVE SUBSCRIPTION REQUIREMENT
+
+    Production Use of the Software REQUIRES an Active Subscription.
+    Evaluation, internal testing, security audit, academic research,
+    and personal non-commercial experimentation do not require an
+    Active Subscription, but all use remains subject to this Agreement.
+
+    The runtime is the contract. The Software's behavior is enforced
+    by PlaneKey's entitlements + paired_installs primitives (see
+    https://planekey.dev/privacy). When Your subscription lapses,
+    Your entitlement cache expires within the documented TTL and
+    Production Use becomes prohibited automatically.
+
+4.  RESTRICTIONS
+
+    You may NOT:
+
+    (a) redistribute the Software, in whole or in part, to any third
+        party, whether or not for compensation;
+    (b) sublicense, rent, lease, lend, sell, or transfer the Software
+        to any third party;
+    (c) operate the Software as part of a managed service, hosted
+        offering, or commercial product made available to any third
+        party, except via PlaneKey's authorized partner programs;
+    (d) operate an alternative authority — meaning any service that
+        does not authenticate to PlaneKey's central auth bridge for
+        entitlement verification, or that proxies, intercepts, or
+        replaces PlaneKey's central auth bridge for third-party
+        clients;
+    (e) reverse engineer, decompile, or disassemble the Software except
+        to the extent that applicable law prohibits this restriction;
+    (f) modify, fork, or create derivative works of the Software for
+        any purpose other than personal experimentation, unless You
+        have written permission from PlaneKey;
+    (g) remove, obscure, or alter any proprietary notices, copyright
+        notices, trademarks, or attributions in the Software;
+    (h) use the Software to design, build, or operate a competing
+        product or service;
+    (i) use the Software in violation of applicable export-control,
+        sanctions, anti-bribery, or privacy laws.
+
+5.  ENTERPRISE DEPLOYMENTS — CUSTOMER-OPERATED BRIDGES PERMITTED
+
+    Notwithstanding Section 4(c), customers may operate a customer-side
+    PlaneKey bridge that authenticates to PlaneKey's central auth
+    bridge for trust decisions, consistent with the definition of an
+    "enterprise bridge" published at https://planekey.dev/privacy and
+    enforced by `paired_installs.channel = 'enterprise'` in PlaneKey's
+    Repo DB. Such enterprise bridges:
+
+    (a) MUST authenticate to PlaneKey's central auth bridge;
+    (b) MUST NOT proxy, intercept, or replace PlaneKey's central auth
+        bridge for any third party other than the operating customer's
+        own internal users;
+    (c) MUST be operated under an Active Subscription with the
+        enterprise add-on or higher.
+
+5A. AGENT-CLASS AND HUMAN-CLASS CLIENTS
+
+    PlaneKey treats Accounts and Clients as first-class entities of one
+    of two kinds, distinguished by the `client_kind` field in the
+    Auth DB:
+
+    (a) "human" — a natural person acting through PlaneKey Client
+        (pk-client) software, the web console, or a bridge surface.
+
+    (b) "ai-agent" — an AI worker, autonomous agent, or other
+        non-human Software operator. Each ai-agent Account holds its
+        own identity row in `subscription_addons` with `addon_kind =
+        'ai_worker'` and is subject to PlaneKey's 99-dimensional
+        personality / identity fingerprint as documented in PlaneKey
+        Bean.
+
+    Both classes are licensed under this Agreement, but with the
+    following distinctions:
+
+    (i)   Human-class Clients receive customer-facing email
+          notifications (welcome, verify, password reset, plan-changed)
+          per privacy.html §1.
+
+    (ii)  Ai-agent-class Clients do not receive social email and are
+          billed under the "outbound from the agent counts; inbound to
+          the agent from us does not" rule documented at
+          https://planekey.dev/privacy.
+
+    (iii) Each ai-agent Account is itself a Licensee of this
+          Agreement; ai-agent Accounts have an independent active /
+          canceled lifecycle from the human Account or Customer that
+          provisioned them, and may have their license suspended
+          independently for behavioral or trust reasons (including
+          anomalous patterns flagged via the integrity ledger) without
+          affecting any other Account.
+
+    (iv)  An ai-agent Account's operator (the human or Customer who
+          provisions the agent) accepts joint responsibility for the
+          ai-agent Account's compliance with this Agreement and remains
+          liable for breaches the ai-agent Account commits.
+
+5B. PLANEKEY BEAN — SUBSTRATE-AGNOSTIC AGENTS
+
+    PlaneKey Bean (Brain Encryption & Authentication for your Noggin)
+    extends the agent-class license framework to neural substrates —
+    both biological (BCI-mediated) and silicon (autonomous AI). Bean
+    Accounts are licensed under this Agreement with the additional
+    consent and revocation primitives documented in the Bean consent
+    architecture at `products/planekey-bean/docs/CONSENT_ARCHITECTURE.md`.
+    Bean Accounts may revoke any specific signal-grant immediately and
+    independently of subscription state; PlaneKey will honor the
+    revocation regardless of contractual lifecycle.
+
+6.  TRADEMARKS
+
+    This Agreement does not grant You any right or license to use any
+    PlaneKey trademark, including (without limitation) "PlaneKey,"
+    "Úknocked," "CosmicID," "ChallengeGate," "Burrow," "Warren,"
+    "Thump," "Bean," "Vairyn," or any PlaneKey logo. Permitted and
+    restricted uses of PlaneKey marks are governed by `TRADEMARK.md`
+    at the repository root.
+
+7.  OWNERSHIP
+
+    The Software is licensed, not sold. PlaneKey retains all right,
+    title, and interest in and to the Software, including all
+    intellectual property rights. No rights are granted to You other
+    than as expressly set forth in this Agreement. All rights not
+    expressly granted are reserved.
+
+8.  FEEDBACK
+
+    If You provide PlaneKey with feedback, suggestions, or ideas
+    regarding the Software ("Feedback"), You hereby grant PlaneKey a
+    perpetual, irrevocable, worldwide, royalty-free, transferable,
+    sublicensable license to use, modify, and exploit such Feedback
+    for any purpose, without obligation to You.
+
+9.  TERMINATION
+
+    This Agreement terminates automatically upon Your breach of any
+    provision. PlaneKey may also terminate this Agreement at any time
+    on written notice if Your subscription is revoked, suspended, or
+    cancelled, or if PlaneKey reasonably determines that continued
+    Your continued use poses a security, legal, or reputational risk
+    to PlaneKey. Upon termination, You must cease all use of the
+    Software and destroy or return all copies in Your possession.
+    Sections 4, 6, 7, 10, 11, 12, 13, and 14 survive termination.
+
+10. WARRANTY DISCLAIMER
+
+    THE SOFTWARE IS PROVIDED "AS IS" AND "AS AVAILABLE," WITH ALL
+    FAULTS, AND WITHOUT WARRANTY OF ANY KIND. PLANEKEY DISCLAIMS ALL
+    WARRANTIES, WHETHER EXPRESS, IMPLIED, STATUTORY, OR OTHERWISE,
+    INCLUDING WITHOUT LIMITATION WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE, TITLE, AND NON-INFRINGEMENT.
+    PLANEKEY DOES NOT WARRANT THAT THE SOFTWARE WILL BE ERROR-FREE,
+    UNINTERRUPTED, SECURE, OR FREE OF HARMFUL COMPONENTS.
+
+11. LIMITATION OF LIABILITY
+
+    TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT
+    WILL PLANEKEY, ITS OFFICERS, DIRECTORS, EMPLOYEES, AGENTS,
+    SUPPLIERS, OR LICENSORS BE LIABLE FOR (A) ANY INDIRECT, INCIDENTAL,
+    SPECIAL, CONSEQUENTIAL, EXEMPLARY, OR PUNITIVE DAMAGES; (B) LOSS
+    OF PROFITS, REVENUE, DATA, USE, OR GOODWILL; OR (C) ANY DAMAGES
+    EXCEEDING THE AMOUNT YOU PAID TO PLANEKEY FOR THE SOFTWARE IN
+    THE TWELVE (12) MONTHS PRECEDING THE EVENT GIVING RISE TO LIABILITY.
+
+12. INDEMNIFICATION
+
+    You will indemnify, defend, and hold harmless PlaneKey from any
+    third-party claim, loss, damage, or expense (including reasonable
+    attorneys' fees) arising from Your breach of this Agreement, Your
+    misuse of the Software, or Your violation of any applicable law
+    in connection with Your use of the Software.
+
+13. GOVERNING LAW; VENUE
+
+    This Agreement is governed by the laws of the State of Oregon,
+    USA, excluding its conflicts-of-laws principles. Any dispute
+    arising under this Agreement will be brought exclusively in the
+    state or federal courts located in Multnomah County, Oregon, and
+    You consent to the personal jurisdiction of those courts.
+
+14. EXPORT CONTROL
+
+    The Software may be subject to U.S. export-control laws,
+    including the Export Administration Regulations. You will not
+    export, re-export, or transfer the Software in violation of any
+    such laws or to any embargoed country, denied party, or restricted
+    end-user.
+
+14A. OWNERSHIP CHAIN AND FUTURE ASSIGNMENT
+
+    The Software is held within PlaneKey's planned five-layer
+    ownership architecture, declared canonically at
+    `config/planekey-business.toml [ownership_layers]`:
+
+      LAYER 1 — Offshore IP Trust (Cook Islands, Cayman, Singapore, or
+                similar permissive jurisdiction; planned). When formed,
+                holds all patents, copyrights, trademarks, and
+                proprietary tech in irrevocable Dynasty Trust form;
+                never engages in business; cannot be sued, dissolved,
+                or seized.
+
+      LAYER 2 — Offshore Revenue Holding LLC (Cayman or equivalent;
+                planned). Receives licensing royalties from Layer 1;
+                handles tax-efficient cash flow.
+
+      LAYER 3 — PlaneKey IP Holdings LLC (Wyoming, USA; planned).
+                US-controlled IP licensing entity. Sublicenses from
+                Layers 1/2; sub-sub-licenses to Layer 4 operating
+                companies. Provides charging-order protection.
+
+      LAYER 4 — Operating LLCs by IP class (planned). Each business
+                unit (AI/Software, Physics/Simulation, Aerospace,
+                Defense, etc.) lives in its own LLC; lawsuit in one
+                does not affect others.
+
+      LAYER 5 — PlaneKey Corporation (Oregon, USA; PRESENT). Operating
+                entity of record; EIN 42-2868560; registered at
+                835 SE 187th, Portland, OR 97233.
+
+    As of the Effective Date, only LAYER 5 exists; LAYER 5 is the
+    Licensor on this Agreement. Licensees acknowledge and agree that:
+
+    (a) PlaneKey reserves the unrestricted right to assign, transfer,
+        contribute, or sublicense its copyright and trademark interests
+        in the Software to any of LAYERS 1, 2, 3, or 4 as those layers
+        are formed, without notice to or consent from Licensees;
+
+    (b) Any such upstream assignment does not impair Licensees' rights
+        under this Agreement; all licenses outstanding at the time of
+        assignment continue in force under the new holder, on
+        identical terms;
+
+    (c) Following an upstream assignment, references in this Agreement
+        to "PlaneKey" and "Licensor" automatically refer to the
+        then-current holder of the assigned interests, unless context
+        clearly requires otherwise;
+
+    (d) The Software's runtime — including the entitlements +
+        paired_installs + signed_receipts primitives — survives any
+        ownership restructuring and continues to bind the same way;
+
+    (e) Customers may continue to use the same Stripe / Mercury /
+        contractual relationship with LAYER 5 (the operating entity)
+        even after IP ownership has moved upstream. Licensees are not
+        required to re-contract on each upstream assignment.
+
+15. ENTIRE AGREEMENT; MODIFICATIONS
+
+    This Agreement, together with the LICENSE files and TRADEMARK
+    policy at the repository root, constitutes the entire agreement
+    between You and PlaneKey concerning the Software. PlaneKey may
+    update this Agreement from time to time; the canonical version
+    lives at https://planekey.dev/license and in the repository at
+    `LICENSE-PROPRIETARY`. Material changes will be communicated via
+    the email on file for Your account. Continued use after a material
+    change constitutes acceptance.
+
+16. CONTACT
+
+    PlaneKey
+    835 SE 187th
+    Portland, OR 97233 USA
+    +1-503-406-5954
+    legal@planekey.dev
