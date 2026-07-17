@@ -1,5 +1,5 @@
 # PlaneKey Trust Layer for VS Code / Cursor
-
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/U8K320KRK0)
 PlaneKey Trust Layer is the IDE front door for PlaneKey. It does not replace `pk-client`; it calls your installed `pk-client` and displays trust state inside VS Code-compatible editors.
 
 ## What it does
