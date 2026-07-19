@@ -1,0 +1,31 @@
+<!-- PlaneKey chat.card — reference snippet for the VSE chat panel -->
+<!--
+  Source: planekey-app/js/chat.js (production)
+  See: docs/pk-chat.d.ts for the full VSE binding contract
+
+  Five channels: Your AI · Docs · Direct · Inbox · Settings
+  Direct sends ride the E2EE Burrow tier (hop / run / vault).
+-->
+<article class="pk-card" aria-label="Messaging">
+  <header class="pk-card-header">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="1.5" width="18" height="18">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+    </svg>
+    <h3>Messaging</h3>
+  </header>
+  <div class="pk-card-body">
+    <p><strong>Persistent chat panel</strong></p>
+    <p>Mounted by one script tag. FAB bottom-right carries the unread badge
+       (warren inbox); panel tabs: Your AI &middot; Docs &middot; Direct
+       &middot; Inbox &middot; Settings. Direct sends ride the E2EE Burrow
+       tier (hop / run / vault).</p>
+    <ul>
+      <li><strong>Your AI</strong> &mdash; routed via PKBridge <code>ai_proxy_completion</code></li>
+      <li><strong>Docs</strong> &mdash; grounded keyword search, no LLM</li>
+      <li><strong>Direct</strong> &mdash; E2EE Burrow send (CosmicID recipient)</li>
+      <li><strong>Inbox</strong> &mdash; read-only warren inbox, click-to-decrypt</li>
+      <li><strong>Settings</strong> &mdash; account surfaces + sign in/out</li>
+    </ul>
+  </div>
+</article>
