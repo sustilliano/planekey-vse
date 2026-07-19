@@ -5,14 +5,16 @@ const cp = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const { PredictiveTypingProvider } = require('./providers/predictiveTypingProvider');
 
-const EXT_VERSION = '0.2.3';
+const EXT_VERSION = '0.2.4';
 const OUTPUT_NAME = 'PlaneKey';
 
 let output;
 let statusBar;
 let trustProvider;
 let actionProvider;
+let predictiveProvider;
 // Install root of THIS extension — the bundled toolchain (pk-client,
 // pk-memory, the MCP server) lives under <extensionRoot>/toolchain/, so a
 // fresh install works with zero config in the editor, from the CLI, and
@@ -42,6 +44,30 @@ function activate(context) {
     vscode.window.registerTreeDataProvider('planekeyActionsView', actionProvider)
   );
 
+  // ── Predictive typing inline completion ──────────────────────────────────
+  predictiveProvider = new PredictiveTypingProvider(
+    getProjectRoot(),
+    getPkClient,
+    getPkMemory,
+    getNode,
+    (msg) => appendLog(msg)
+  );
+  const COMPLETION_LANGUAGES = [
+    { scheme: 'file', language: 'javascript' },
+    { scheme: 'file', language: 'typescript' },
+    { scheme: 'file', language: 'typescriptreact' },
+    { scheme: 'file', language: 'javascriptreact' },
+    { scheme: 'file', language: 'html' },
+    { scheme: 'file', language: 'json' }
+  ];
+  context.subscriptions.push(
+    vscode.languages.registerInlineCompletionItemProvider(
+      COMPLETION_LANGUAGES,
+      predictiveProvider
+    )
+  );
+  appendLog('[Predictive] Inline completion provider registered.');
+
   const commands = [
     ['planekey.refreshStatus', refreshStatus],
     ['planekey.runRepoGuard', () => runScan('RepoGuard', ['repoguard', 'scan', getProjectRoot()], { parse: true })],
@@ -67,9 +93,6 @@ function activate(context) {
     ['planekey.runForensicsAttribution', runForensicsAttribution],
     ['planekey.runRganoPacket', runRganoPacket],
     ['planekey.runRootRabbitHealth', runRootRabbitHealth],
-    // v0.2.2 — the 4 audit-named SELECTs as IDE commands (pk-client + IDE
-    // is the customer's first UI). Each shells to the absorbed pk-client
-    // verb that ships in v0.1.5.12.
     ['planekey.runCoherencePack', runCoherencePack],
     ['planekey.runTrustState', runTrustState],
     ['planekey.runRpgReachable', runRpgReachable],
@@ -79,7 +102,13 @@ function activate(context) {
     ['planekey.setMcpServerPath', setMcpServerPath],
     ['planekey.refreshMcpServer', () => { mcpDidChange.fire(); vscode.window.showInformationMessage('PlaneKey MCP: re-registered with the MCP host.'); }],
     ['planekey.showCliSetup', showCliSetup],
-    ['planekey.openPkClientTerminal', openPkClientTerminal]
+    ['planekey.openPkClientTerminal', openPkClientTerminal],
+    // Predictive typing commands
+    ['planekey.indexCodebase', indexCodebase],
+    ['planekey.buildDB', buildDB],
+    ['planekey.refreshCache', refreshPredictiveCache],
+    ['planekey.showMemoryStats', showMemoryStats],
+    ['planekey.togglePredictive', togglePredictive]
   ];
   for (const [name, fn] of commands) {
     context.subscriptions.push(vscode.commands.registerCommand(name, fn));
@@ -99,31 +128,35 @@ function activate(context) {
     }
   }));
 
+  // Invalidate predictive cache on config change
+  context.subscriptions.push(vscode.workspace.onDidChangeConfiguration((e) => {
+    if (e.affectsConfiguration('planekey') && predictiveProvider) {
+      predictiveProvider.invalidateCache();
+    }
+  }));
+
+  // Invalidate predictive cache when an operator incident file changes
+  context.subscriptions.push(vscode.workspace.onDidChangeTextDocument((e) => {
+    if (e.document.fileName.includes('.planekey/operator/incidents') && predictiveProvider) {
+      predictiveProvider.onIncidentChanged(e.document);
+    }
+  }));
+
   updateCurrentFileRisk();
   refreshStatus({ quiet: true });
 }
 
-function deactivate() {}
+function deactivate() {
+  if (predictiveProvider) predictiveProvider.dispose();
+}
 
 // ── PlaneKey Env-Observer MCP server ────────────────────────────────────────
-// Registers the FastMCP stdio server (mcp/planekey_env_observer_server.py)
-// with VS Code's built-in MCP host (Copilot Chat / Agent Mode), so the five
-// PlaneKey MCP tools (scan_workspace, submit_workspace_report,
-// record_assistant_suggestion, get_environment_state, explain_risk) and the
-// two resources (planekey://workspace/current, planekey://policy/current)
-// are available to any MCP-aware assistant in the editor.
-//
-// The registration API (vscode.lm.registerMcpServerDefinitionProvider +
-// vscode.McpStdioServerDefinition) landed in VS Code 1.101 — guarded so the
-// extension still loads (minus MCP) on older builds rather than throwing.
 const mcpDidChange = new vscode.EventEmitter();
 
 function registerMcpServer(context) {
   context.subscriptions.push(mcpDidChange);
   const lm = vscode.lm;
   if (!lm || typeof lm.registerMcpServerDefinitionProvider !== 'function' || typeof vscode.McpStdioServerDefinition !== 'function') {
-    // Older VS Code without the MCP provider API. Everything else still works;
-    // point the user at the manual mcp/claude_desktop_config.example.json.
     appendLog('[MCP] This VS Code build predates the MCP server provider API (needs 1.101+); MCP auto-registration skipped. Use mcp/*_config.example.json to wire it manually.\n');
     return;
   }
@@ -132,7 +165,6 @@ function registerMcpServer(context) {
     provideMcpServerDefinitions() {
       const server = resolveMcpServerPath();
       if (!server) {
-        // No server file found — surface once, return nothing (no fake entry).
         appendLog('[MCP] planekey_env_observer_server.py not found. Set planekey.mcpServerPath.\n');
         return [];
       }
@@ -160,12 +192,9 @@ function registerMcpServer(context) {
   appendLog('[MCP] PlaneKey Env-Observer MCP provider registered.\n');
 }
 
-// Locate mcp/planekey_env_observer_server.py: explicit config wins, else probe
-// the usual spots relative to the project root and the configured pk-client.
 function resolveMcpServerPath() {
   const configured = (getConfig().get('mcpServerPath') || '').trim();
   if (configured) return fs.existsSync(configured) ? configured : '';
-  // Prefer the copy bundled with this extension (zero-config).
   const bundled = bundledTool('mcp/planekey_env_observer_server.py');
   if (bundled) return bundled;
   const root = getProjectRoot();
@@ -175,7 +204,6 @@ function resolveMcpServerPath() {
     path.join(root, '..', 'bridge', 'mcp', 'planekey_env_observer_server.py'),
     path.join(root, 'bridge', 'mcp', 'planekey_env_observer_server.py')
   ];
-  // Also derive from pkClientPath (…/pk-client/bin → …/bridge/mcp).
   const pkc = (getConfig().get('pkClientPath') || '').trim();
   if (pkc) {
     const guess = path.resolve(path.dirname(pkc), '..', '..', 'bridge', 'mcp', 'planekey_env_observer_server.py');
@@ -187,9 +215,6 @@ function resolveMcpServerPath() {
   return '';
 }
 
-// The CLI surface: show the user how to use the BUNDLED pk-client straight
-// from their terminal — same one download, no separate install. Offers to
-// copy a ready-made shell alias.
 async function showCliSetup() {
   const bundled = bundledTool('pk-client/bin/pk-client.js');
   if (!bundled) {
@@ -218,33 +243,65 @@ async function showCliSetup() {
   }
 }
 
-// Opens a named integrated terminal pre-pointed at the project root and
-// immediately runs `node <bundled-pk-client> --help` so the user can see
-// all available commands without leaving the editor. Falls back to a
-// globally installed pk-client if the bundle is not found.
 async function openPkClientTerminal() {
   const bundled = bundledTool('pk-client/bin/pk-client.js');
   const node = getNode();
   const root = getProjectRoot();
-
   const terminal = vscode.window.createTerminal({
     name: 'pk-client',
     cwd: root,
     message: `PlaneKey pk-client terminal — project root: ${root}`
   });
-
-  terminal.show(false); // false = don't steal focus from the editor
-
+  terminal.show(false);
   if (bundled) {
-    // Use the copy bundled with this extension — no global install required.
     terminal.sendText(`${node} "${bundled}" --help`, true);
   } else {
-    // Fall back to a globally installed pk-client on PATH.
     vscode.window.showInformationMessage(
       'PlaneKey: bundled pk-client not found; falling back to global pk-client on PATH.'
     );
     terminal.sendText('pk-client --help', true);
   }
+}
+
+// ── Predictive typing commands ───────────────────────────────────────────────
+
+async function indexCodebase() {
+  const name = scanName('ide-memory');
+  vscode.window.showInformationMessage('PlaneKey: Indexing codebase for predictive typing...');
+  await runExternalBinary('Index Codebase', getPkMemory(), ['memory', 'build', getProjectRoot(), '--name', name]);
+  if (predictiveProvider) predictiveProvider.invalidateCache();
+  vscode.window.showInformationMessage('PlaneKey: Codebase indexed. Predictive typing cache refreshed.');
+}
+
+async function buildDB() {
+  vscode.window.showInformationMessage('PlaneKey: Building repo DB for predictive typing...');
+  await runExternalBinary('Build Repo DB', getPkMemory(), ['rgano', 'scan', getProjectRoot(), '--name', scanName('ide-rgano')]);
+  if (predictiveProvider) predictiveProvider.invalidateCache();
+  vscode.window.showInformationMessage('PlaneKey: Repo DB built. Predictive typing cache refreshed.');
+}
+
+function refreshPredictiveCache() {
+  if (predictiveProvider) {
+    predictiveProvider.invalidateCache();
+    vscode.window.showInformationMessage('PlaneKey: Predictive typing cache cleared.');
+  }
+}
+
+async function showMemoryStats() {
+  const result = await runPk(['memory', 'stats', '--json'], { cwd: getProjectRoot() });
+  const text = (result.stdout || result.stderr || 'No stats available.').trim();
+  const doc = await vscode.workspace.openTextDocument({ content: text, language: 'json' });
+  await vscode.window.showTextDocument(doc, { preview: true });
+}
+
+async function togglePredictive() {
+  const cfg = getConfig();
+  const current = cfg.get('predictive.enabled', true);
+  await cfg.update('predictive.enabled', !current, vscode.ConfigurationTarget.Workspace);
+  vscode.window.showInformationMessage(
+    `PlaneKey predictive typing ${!current ? 'enabled' : 'disabled'}.`
+  );
+  if (predictiveProvider) predictiveProvider.invalidateCache();
 }
 
 async function setMcpServerPath() {
@@ -279,22 +336,17 @@ function getReportRoot() {
   return configured && configured.trim() ? configured.trim() : path.join(getProjectRoot(), 'reports');
 }
 
-// Node interpreter for the bundled JS tools.
 function getNode() {
   const configured = (getConfig().get('nodePath') || '').trim();
   return configured || 'node';
 }
 
-// A bundled toolchain file if it exists, else ''.
 function bundledTool(rel) {
   if (!extensionRoot) return '';
   const p = path.join(extensionRoot, 'toolchain', rel);
   try { return fs.existsSync(p) ? p : ''; } catch (_) { return ''; }
 }
 
-// Resolution order for every tool: explicit config → the copy BUNDLED with
-// this extension (zero-config) → a same-named binary on PATH. A .js result is
-// run through node by the spawner (see toInvocation).
 function getPkClient() {
   const configured = getConfig().get('pkClientPath');
   if (configured && configured.trim()) return configured.trim();
@@ -311,9 +363,6 @@ function getPkMemory() {
   return process.platform === 'win32' ? 'pk-memory.cmd' : 'pk-memory';
 }
 
-// Turn a resolved tool path + args into an actual (command, args) pair: a .js
-// tool becomes `node <tool> …args`, anything else runs directly. Centralizes
-// the bundled-JS-vs-PATH-binary distinction so every spawn site is uniform.
 function toInvocation(tool, args) {
   if (typeof tool === 'string' && tool.toLowerCase().endsWith('.js')) {
     return { command: getNode(), args: [tool, ...args] };
@@ -382,7 +431,6 @@ function runPk(args, options = {}) {
       if (stderr) output.append(stderr.endsWith('\n') ? stderr : stderr + '\n');
       resolve({ error, stdout: stdout || '', stderr: stderr || '', code: error && typeof error.code === 'number' ? error.code : 0 });
     });
-
     child.on('error', (err) => {
       appendLog(`Failed to start pk-client: ${err.message}`);
       resolve({ error: err, stdout: '', stderr: err.message, code: -1 });
@@ -394,6 +442,8 @@ async function refreshStatus(options = {}) {
   lastState.projectRoot = getProjectRoot();
   lastState.pkClient = getPkClient();
   updateCurrentFileRisk();
+  // Keep predictive provider project root in sync
+  if (predictiveProvider) predictiveProvider.projectRoot = getProjectRoot();
 
   const result = await runPk(['status'], { cwd: getProjectRoot() });
   const combined = `${result.stdout}\n${result.stderr}`;
@@ -518,7 +568,6 @@ function summarizeOutput(text) {
   return (interesting.length ? interesting : lines).slice(0, 8);
 }
 
-
 async function runMemoryBuild() {
   const cfg = getConfig();
   const name = await vscode.window.showInputBox({ prompt: 'TMrFS memory report name', value: cfg.get('defaultMemoryName') || scanName('ide-memory') });
@@ -547,15 +596,6 @@ async function runGraftPlan() {
 async function runOperatorDoctor() {
   await runExternalBinary('Operator Doctor', getPkOperator(), ['doctor', getProjectRoot()]);
 }
-
-// ── Bridge consumers (mirror of pk-client v0.1.5.8 subcommands) ──────────
-// pk-client defaults to local-only — it writes the envelope under
-// reports/bridge-envelopes/ and exits. Pass --submit to POST to
-// bridge.planekey.dev (the canonical home bridge — not configurable).
-// The IDE picker offers both modes; "Submit" appends --submit to the args.
-// PLANEKEY_HMAC_SECRET must be set in the IDE's environment (or in
-// client.config.json -> bridge.hmacSecret) for HMAC-gated routes when
-// the user picks Submit.
 
 async function pickSubmitMode(label) {
   const choice = await vscode.window.showQuickPick(
@@ -613,22 +653,13 @@ async function runForensicsAttribution() {
 }
 
 const RGANO_EXTRACTORS = [
-  'rgano_scene.py',
-  'rgano_image.py',
-  'rgano_taxonomy.py',
-  'rgano_coastline.py',
-  'rgano_phase.py',
-  'rgano_aerial.py',
-  'rgano_geo_recon.py',
-  'rgano_label_transfer.py',
-  'container_annotation_and_proposal_tool.py',
+  'rgano_scene.py', 'rgano_image.py', 'rgano_taxonomy.py', 'rgano_coastline.py',
+  'rgano_phase.py', 'rgano_aerial.py', 'rgano_geo_recon.py',
+  'rgano_label_transfer.py', 'container_annotation_and_proposal_tool.py'
 ];
 
 async function runRganoPacket() {
-  const extractor = await vscode.window.showQuickPick(RGANO_EXTRACTORS, {
-    placeHolder: 'Select the Rgano extractor that produced the raw JSON',
-    ignoreFocusOut: true,
-  });
+  const extractor = await vscode.window.showQuickPick(RGANO_EXTRACTORS, { placeHolder: 'Select the Rgano extractor that produced the raw JSON', ignoreFocusOut: true });
   if (!extractor) return;
   const inputPath = await pickJsonFile('Select raw extractor output JSON');
   if (!inputPath) return;
@@ -649,10 +680,6 @@ async function runRootRabbitHealth() {
   await runScan('RootRabbit Health', args, { parse: false });
 }
 
-// ── v0.2.2: audit-named SELECTs surfaced in the Command Palette ──────────
-// Each shells to a pk-client v0.1.5.12 subcommand. Same shape as the
-// bridge-consumer commands above.
-
 async function runCoherencePack() {
   await runScan('Coherence Pack', ['coherence', '--dbs', '/tmp/dbs-rpg'], { parse: false });
 }
@@ -662,10 +689,7 @@ async function runTrustState() {
 }
 
 async function runRpgReachable() {
-  const symbol = await vscode.window.showInputBox({
-    prompt: 'Target symbol name (e.g. bridge_attest, verify_hmac, pgp_parse_pubenc_sesskey)',
-    ignoreFocusOut: true,
-  });
+  const symbol = await vscode.window.showInputBox({ prompt: 'Target symbol name (e.g. bridge_attest, verify_hmac)', ignoreFocusOut: true });
   if (!symbol) return;
   await runScan('RPG Reachable', ['rpg', 'reachable', symbol, '--table'], { parse: false });
 }
@@ -678,20 +702,10 @@ async function runMatrixCarryForward() {
   await runScan('Matrix Carry-Forward', ['matrix', 'carry-forward', left, right, '--table'], { parse: false });
 }
 
-// v0.2.3: bridge-aggregate consumers (audit-named SELECTs #2 + #5)
 async function runDecisionsDistribution() {
-  const service = await vscode.window.showInputBox({
-    prompt: 'Service ID filter (blank = all services)',
-    ignoreFocusOut: true,
-  });
-  const sinceDays = await vscode.window.showInputBox({
-    prompt: 'Since how many days back?',
-    value: '30',
-    ignoreFocusOut: true,
-  });
-  const submit = await vscode.window.showQuickPick(['local-only (just show target URL)', 'submit (fetch from bridge.planekey.dev)'], {
-    placeHolder: 'Local-only or fetch from bridge?',
-  });
+  const service = await vscode.window.showInputBox({ prompt: 'Service ID filter (blank = all services)', ignoreFocusOut: true });
+  const sinceDays = await vscode.window.showInputBox({ prompt: 'Since how many days back?', value: '30', ignoreFocusOut: true });
+  const submit = await vscode.window.showQuickPick(['local-only (just show target URL)', 'submit (fetch from bridge.planekey.dev)'], { placeHolder: 'Local-only or fetch from bridge?' });
   if (!submit) return;
   const args = ['decisions', 'distribution'];
   if (service) args.push('--service', service);
@@ -701,23 +715,14 @@ async function runDecisionsDistribution() {
 }
 
 async function runOperatorReplay() {
-  const service = await vscode.window.showInputBox({
-    prompt: 'Service ID filter (blank = all services)',
-    ignoreFocusOut: true,
-  });
+  const service = await vscode.window.showInputBox({ prompt: 'Service ID filter (blank = all services)', ignoreFocusOut: true });
   const kind = await vscode.window.showQuickPick(
     ['(any)', 'patch_apply', 'patch_probe', 'soft_delete', 'hard_delete', 'restore', 'wipe_plan', 'wipe_apply', 'trash_list', 'doctor'],
     { placeHolder: 'Filter by action_kind' }
   );
   if (!kind) return;
-  const sinceDays = await vscode.window.showInputBox({
-    prompt: 'Since how many days back?',
-    value: '30',
-    ignoreFocusOut: true,
-  });
-  const submit = await vscode.window.showQuickPick(['local-only (just show target URL)', 'submit (fetch from bridge.planekey.dev)'], {
-    placeHolder: 'Local-only or fetch from bridge?',
-  });
+  const sinceDays = await vscode.window.showInputBox({ prompt: 'Since how many days back?', value: '30', ignoreFocusOut: true });
+  const submit = await vscode.window.showQuickPick(['local-only (just show target URL)', 'submit (fetch from bridge.planekey.dev)'], { placeHolder: 'Local-only or fetch from bridge?' });
   if (!submit) return;
   const args = ['operator', 'replay'];
   if (service) args.push('--service', service);
@@ -734,20 +739,14 @@ async function openOperatorIncident() {
 }
 
 async function attestDev() {
-  const name = await vscode.window.showInputBox({
-    prompt: 'PlaneKey dev attestation name',
-    value: scanName('ide-dev')
-  });
+  const name = await vscode.window.showInputBox({ prompt: 'PlaneKey dev attestation name', value: scanName('ide-dev') });
   if (!name) return;
   await runScan('Dev Attestation', ['layer', 'attest', 'dev', getProjectRoot(), '--name', name], { parse: true });
 }
 
 async function createSafeBundle() {
   const cfg = getConfig();
-  const name = await vscode.window.showInputBox({
-    prompt: 'PlaneKey bundle name',
-    value: cfg.get('defaultBundleName') || 'ide-safe-bundle'
-  });
+  const name = await vscode.window.showInputBox({ prompt: 'PlaneKey bundle name', value: cfg.get('defaultBundleName') || 'ide-safe-bundle' });
   if (!name) return;
   await runScan('Safe Bundle', ['bundle', 'create', name, '--intent', 'Created from PlaneKey IDE add-on'], { parse: true });
 }
@@ -774,7 +773,6 @@ async function setPkClientPath() {
   refreshStatus({ quiet: true });
 }
 
-
 async function setPkMemoryPath() {
   const current = getPkMemory();
   const value = await vscode.window.showInputBox({ prompt: 'Path to pk-memory executable. Example: pk-memory.cmd or C:\path\to\pk-memory.js', value: current });
@@ -793,10 +791,7 @@ async function setPkOperatorPath() {
 
 async function setProjectRoot() {
   const picked = await vscode.window.showOpenDialog({
-    canSelectFiles: false,
-    canSelectFolders: true,
-    canSelectMany: false,
-    openLabel: 'Use as PlaneKey Project Root'
+    canSelectFiles: false, canSelectFolders: true, canSelectMany: false, openLabel: 'Use as PlaneKey Project Root'
   });
   if (!picked || !picked[0]) return;
   await getConfig().update('projectRoot', picked[0].fsPath, vscode.ConfigurationTarget.Workspace);
@@ -814,7 +809,6 @@ class TrustProvider {
     items.push(treeItem('Project', lastState.projectRoot || 'No workspace', 'folder'));
     items.push(treeItem('pk-client', lastState.pkClient || 'auto', 'terminal'));
     items.push(treeItem('Current file', `${lastState.currentFile || 'none'} — ${lastState.currentFileRisk}`, riskIcon(lastState.currentFileRisk)));
-
     const runs = Object.entries(lastState.lastRuns).sort((a, b) => String(b[1].time).localeCompare(String(a[1].time)));
     if (!runs.length) {
       items.push(treeItem('Scans', 'No scans run yet', 'circle-outline'));
@@ -824,7 +818,6 @@ class TrustProvider {
         items.push(treeItem(name, run.ok ? 'completed' : 'warning/error', run.ok ? 'check' : 'warning', tooltip));
       }
     }
-
     for (const finding of (lastState.findings || []).slice(0, 8)) {
       items.push(treeItem('Status', finding, 'info'));
     }
@@ -841,6 +834,13 @@ class ActionProvider {
     return [
       commandItem('Refresh Trust Status', 'planekey.refreshStatus', 'refresh'),
       commandItem('Open pk-client Terminal', 'planekey.openPkClientTerminal', 'terminal'),
+      commandItem('── Predictive Typing ──', '', 'symbol-keyword'),
+      commandItem('Index Codebase (Memory)', 'planekey.indexCodebase', 'symbol-class'),
+      commandItem('Build Repo DB', 'planekey.buildDB', 'database'),
+      commandItem('Refresh Predictive Cache', 'planekey.refreshCache', 'refresh'),
+      commandItem('Show Memory Stats', 'planekey.showMemoryStats', 'graph'),
+      commandItem('Toggle Predictive Typing', 'planekey.togglePredictive', 'eye'),
+      commandItem('── Scans ──', '', 'shield'),
       commandItem('Run RepoGuard', 'planekey.runRepoGuard', 'shield'),
       commandItem('Run PixelGuard', 'planekey.runPixelGuard', 'eye'),
       commandItem('Run ResidueGuard Map', 'planekey.runResidueMap', 'search'),
@@ -881,7 +881,7 @@ function treeItem(label, description, icon, tooltip) {
 function commandItem(label, command, icon) {
   const item = new vscode.TreeItem(label, vscode.TreeItemCollapsibleState.None);
   item.iconPath = new vscode.ThemeIcon(icon || 'play');
-  item.command = { command, title: label };
+  if (command) item.command = { command, title: label };
   return item;
 }
 
