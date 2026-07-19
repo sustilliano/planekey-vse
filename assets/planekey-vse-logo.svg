@@ -1,0 +1,184 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <!-- Glow filters -->
+    <filter id="glow-warren" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="2.5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glow-burrow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glow-soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <!-- Clip to keep fragments near the mark -->
+    <clipPath id="orbit-clip">
+      <circle cx="100" cy="100" r="95"/>
+    </clipPath>
+
+    <!-- Radial background glow -->
+    <radialGradient id="bg-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#161A22"/>
+      <stop offset="100%" stop-color="#07090C"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background -->
+  <circle cx="100" cy="100" r="100" fill="url(#bg-glow)"/>
+
+  <!-- Subtle burrow radial haze -->
+  <circle cx="100" cy="100" r="72" fill="none"
+    stroke="rgba(124,167,255,0.06)" stroke-width="44"/>
+
+  <!-- ── Orbiting code fragment ring (outer) ──
+       8 text fragments rotating slowly at r≈72, staggered -->
+  <g clip-path="url(#orbit-clip)">
+
+    <!-- Fragment 1: pk-client -->
+    <g filter="url(#glow-warren)">
+      <animateTransform attributeName="transform" type="rotate"
+        from="0 100 100" to="360 100 100" dur="28s" repeatCount="indefinite"/>
+      <text x="162" y="103" font-family="'IBM Plex Mono', monospace"
+        font-size="8.5" fill="#6FD49A" opacity="0.82" letter-spacing="0.04em">pk-client</text>
+    </g>
+
+    <!-- Fragment 2: --json -->
+    <g filter="url(#glow-burrow)">
+      <animateTransform attributeName="transform" type="rotate"
+        from="45 100 100" to="405 100 100" dur="28s" repeatCount="indefinite"/>
+      <text x="155" y="103" font-family="'IBM Plex Mono', monospace"
+        font-size="8" fill="#7CA7FF" opacity="0.70" letter-spacing="0.04em">--json</text>
+    </g>
+
+    <!-- Fragment 3: warren -->
+    <g filter="url(#glow-warren)">
+      <animateTransform attributeName="transform" type="rotate"
+        from="90 100 100" to="450 100 100" dur="28s" repeatCount="indefinite"/>
+      <text x="157" y="103" font-family="'IBM Plex Mono', monospace"
+        font-size="8" fill="#6FD49A" opacity="0.60" letter-spacing="0.04em">warren</text>
+    </g>
+
+    <!-- Fragment 4: trust.state -->
+    <g filter="url(#glow-burrow)">
+      <animateTransform attributeName="transform" type="rotate"
+        from="135 100 100" to="495 100 100" dur="28s" repeatCount="indefinite"/>
+      <text x="152" y="103" font-family="'IBM Plex Mono', monospace"
+        font-size="7.5" fill="#7CA7FF" opacity="0.65" letter-spacing="0.04em">trust.state</text>
+    </g>
+
+    <!-- Fragment 5: canon ✓ -->
+    <g filter="url(#glow-warren)">
+      <animateTransform attributeName="transform" type="rotate"
+        from="180 100 100" to="540 100 100" dur="28s" repeatCount="indefinite"/>
+      <text x="158" y="103" font-family="'IBM Plex Mono', monospace"
+        font-size="8" fill="#6FD49A" opacity="0.75" letter-spacing="0.04em">canon ✓</text>
+    </g>
+
+    <!-- Fragment 6: burrow.send -->
+    <g filter="url(#glow-burrow)">
+      <animateTransform attributeName="transform" type="rotate"
+        from="225 100 100" to="585 100 100" dur="28s" repeatCount="indefinite"/>
+      <text x="150" y="103" font-family="'IBM Plex Mono', monospace"
+        font-size="7.5" fill="#7CA7FF" opacity="0.60" letter-spacing="0.04em">burrow.send</text>
+    </g>
+
+    <!-- Fragment 7: repoguard -->
+    <g filter="url(#glow-soft)">
+      <animateTransform attributeName="transform" type="rotate"
+        from="270 100 100" to="630 100 100" dur="28s" repeatCount="indefinite"/>
+      <text x="155" y="103" font-family="'IBM Plex Mono', monospace"
+        font-size="8" fill="#8E97A4" opacity="0.50" letter-spacing="0.04em">repoguard</text>
+    </g>
+
+    <!-- Fragment 8: .planekey/ -->
+    <g filter="url(#glow-soft)">
+      <animateTransform attributeName="transform" type="rotate"
+        from="315 100 100" to="675 100 100" dur="28s" repeatCount="indefinite"/>
+      <text x="152" y="103" font-family="'IBM Plex Mono', monospace"
+        font-size="7.5" fill="#8E97A4" opacity="0.45" letter-spacing="0.04em">.planekey/</text>
+    </g>
+  </g>
+
+  <!-- ── Inner orbit (faster, counter-clockwise) ── -->
+  <g clip-path="url(#orbit-clip)">
+
+    <!-- inner fragment a: --trust -->
+    <g filter="url(#glow-soft)">
+      <animateTransform attributeName="transform" type="rotate"
+        from="0 100 100" to="-360 100 100" dur="18s" repeatCount="indefinite"/>
+      <text x="138" y="101" font-family="'IBM Plex Mono', monospace"
+        font-size="7" fill="rgba(124,167,255,0.45)" letter-spacing="0.06em">--trust</text>
+    </g>
+
+    <!-- inner fragment b: 0xc4f... -->
+    <g filter="url(#glow-soft)">
+      <animateTransform attributeName="transform" type="rotate"
+        from="120 100 100" to="-240 100 100" dur="18s" repeatCount="indefinite"/>
+      <text x="136" y="101" font-family="'IBM Plex Mono', monospace"
+        font-size="6.5" fill="rgba(111,212,154,0.40)" letter-spacing="0.06em">0xc4f2</text>
+    </g>
+
+    <!-- inner fragment c: ok -->
+    <g filter="url(#glow-warren)">
+      <animateTransform attributeName="transform" type="rotate"
+        from="240 100 100" to="-120 100 100" dur="18s" repeatCount="indefinite"/>
+      <text x="140" y="101" font-family="'IBM Plex Mono', monospace"
+        font-size="7" fill="rgba(111,212,154,0.55)" letter-spacing="0.06em">ok</text>
+    </g>
+  </g>
+
+  <!-- ── pk-mark (centrepiece) ── -->
+  <!-- Outer glow halo -->
+  <rect x="62" y="62" width="76" height="76" rx="6"
+    fill="none" stroke="rgba(124,167,255,0.12)" stroke-width="6"
+    filter="url(#glow-burrow)"/>
+
+  <!-- Mark box -->
+  <rect x="66" y="66" width="68" height="68" rx="4.5"
+    fill="#11141A" stroke="#E8ECF2" stroke-width="2"
+    filter="url(#glow-soft)">
+    <!-- Breathing opacity on the mark -->
+    <animate attributeName="stroke-opacity"
+      values="1;0.7;1" dur="4s" repeatCount="indefinite"/>
+  </rect>
+
+  <!-- Vertical bar -->
+  <line x1="100" y1="74" x2="100" y2="126"
+    stroke="#E8ECF2" stroke-width="2" stroke-linecap="square"/>
+
+  <!-- Horizontal tick -->
+  <line x1="100" y1="116" x2="111" y2="116"
+    stroke="#E8ECF2" stroke-width="2" stroke-linecap="square"/>
+
+  <!-- Left dot (burrow) -->
+  <circle cx="87" cy="100" r="4.5" fill="#7CA7FF">
+    <animate attributeName="r" values="4.5;5.2;4.5" dur="3.2s" repeatCount="indefinite"/>
+    <animate attributeName="fill-opacity" values="1;0.8;1" dur="3.2s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Right dot (warren) -->
+  <circle cx="113" cy="100" r="4.5" fill="#6FD49A">
+    <animate attributeName="r" values="4.5;5.2;4.5" dur="3.8s" repeatCount="indefinite"/>
+    <animate attributeName="fill-opacity" values="1;0.8;1" dur="3.8s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Dot glow rings -->
+  <circle cx="87" cy="100" r="7" fill="none"
+    stroke="rgba(124,167,255,0.20)" stroke-width="1">
+    <animate attributeName="r" values="6;9;6" dur="3.2s" repeatCount="indefinite"/>
+    <animate attributeName="stroke-opacity" values="0.20;0;0.20" dur="3.2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="113" cy="100" r="7" fill="none"
+    stroke="rgba(111,212,154,0.20)" stroke-width="1">
+    <animate attributeName="r" values="6;9;6" dur="3.8s" repeatCount="indefinite"/>
+    <animate attributeName="stroke-opacity" values="0.20;0;0.20" dur="3.8s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- VSE label beneath the mark -->
+  <text x="100" y="148" font-family="'IBM Plex Mono', monospace"
+    font-size="7" fill="#5C6573" letter-spacing="0.22em"
+    text-anchor="middle" text-decoration="none">VSE</text>
+</svg>
