@@ -78,7 +78,8 @@ function activate(context) {
     ['planekey.runOperatorReplay', runOperatorReplay],
     ['planekey.setMcpServerPath', setMcpServerPath],
     ['planekey.refreshMcpServer', () => { mcpDidChange.fire(); vscode.window.showInformationMessage('PlaneKey MCP: re-registered with the MCP host.'); }],
-    ['planekey.showCliSetup', showCliSetup]
+    ['planekey.showCliSetup', showCliSetup],
+    ['planekey.openPkClientTerminal', openPkClientTerminal]
   ];
   for (const [name, fn] of commands) {
     context.subscriptions.push(vscode.commands.registerCommand(name, fn));
@@ -214,6 +215,35 @@ async function showCliSetup() {
   } else if (pick === 'Copy run command') {
     await vscode.env.clipboard.writeText(runLine);
     vscode.window.showInformationMessage('PlaneKey: run command copied to clipboard.');
+  }
+}
+
+// Opens a named integrated terminal pre-pointed at the project root and
+// immediately runs `node <bundled-pk-client> --help` so the user can see
+// all available commands without leaving the editor. Falls back to a
+// globally installed pk-client if the bundle is not found.
+async function openPkClientTerminal() {
+  const bundled = bundledTool('pk-client/bin/pk-client.js');
+  const node = getNode();
+  const root = getProjectRoot();
+
+  const terminal = vscode.window.createTerminal({
+    name: 'pk-client',
+    cwd: root,
+    message: `PlaneKey pk-client terminal — project root: ${root}`
+  });
+
+  terminal.show(false); // false = don't steal focus from the editor
+
+  if (bundled) {
+    // Use the copy bundled with this extension — no global install required.
+    terminal.sendText(`${node} "${bundled}" --help`, true);
+  } else {
+    // Fall back to a globally installed pk-client on PATH.
+    vscode.window.showInformationMessage(
+      'PlaneKey: bundled pk-client not found; falling back to global pk-client on PATH.'
+    );
+    terminal.sendText('pk-client --help', true);
   }
 }
 
@@ -810,6 +840,7 @@ class ActionProvider {
     if (element) return [];
     return [
       commandItem('Refresh Trust Status', 'planekey.refreshStatus', 'refresh'),
+      commandItem('Open pk-client Terminal', 'planekey.openPkClientTerminal', 'terminal'),
       commandItem('Run RepoGuard', 'planekey.runRepoGuard', 'shield'),
       commandItem('Run PixelGuard', 'planekey.runPixelGuard', 'eye'),
       commandItem('Run ResidueGuard Map', 'planekey.runResidueMap', 'search'),

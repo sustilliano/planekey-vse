@@ -121,6 +121,12 @@
         "category": "PlaneKey"
       },
       {
+        "command": "planekey.openPkClientTerminal",
+        "title": "PlaneKey: Open pk-client Terminal",
+        "category": "PlaneKey",
+        "icon": "$(terminal)"
+      },
+      {
         "command": "planekey.runRepoGuard",
         "title": "PlaneKey: Run RepoGuard",
         "category": "PlaneKey"
@@ -283,137 +289,51 @@
     ],
     "menus": {
       "commandPalette": [
-        {
-          "command": "planekey.refreshStatus"
-        },
-        {
-          "command": "planekey.runRepoGuard"
-        },
-        {
-          "command": "planekey.runPixelGuard"
-        },
-        {
-          "command": "planekey.runResidueMap"
-        },
-        {
-          "command": "planekey.runRootRabbit"
-        },
-        {
-          "command": "planekey.runSafetyNet"
-        },
-        {
-          "command": "planekey.attestDev"
-        },
-        {
-          "command": "planekey.createSafeBundle"
-        },
-        {
-          "command": "planekey.openReports"
-        },
-        {
-          "command": "planekey.setPkClientPath"
-        },
-        {
-          "command": "planekey.setProjectRoot"
-        },
-        {
-          "command": "planekey.runMemoryBuild"
-        },
-        {
-          "command": "planekey.runRganoScan"
-        },
-        {
-          "command": "planekey.runCanonRank"
-        },
-        {
-          "command": "planekey.runGraftPlan"
-        },
-        {
-          "command": "planekey.runOperatorDoctor"
-        },
-        {
-          "command": "planekey.openIncident"
-        },
-        {
-          "command": "planekey.setPkMemoryPath"
-        },
-        {
-          "command": "planekey.setPkOperatorPath"
-        },
-        {
-          "command": "planekey.runFlightReport"
-        },
-        {
-          "command": "planekey.runCanonAnalyze"
-        },
-        {
-          "command": "planekey.runForensicsAttribution"
-        },
-        {
-          "command": "planekey.runRganoPacket"
-        },
-        {
-          "command": "planekey.runRootRabbitHealth"
-        },
-        {
-          "command": "planekey.runCoherencePack"
-        },
-        {
-          "command": "planekey.runTrustState"
-        },
-        {
-          "command": "planekey.runRpgReachable"
-        },
-        {
-          "command": "planekey.runMatrixCarryForward"
-        },
-        {
-          "command": "planekey.runDecisionsDistribution"
-        },
-        {
-          "command": "planekey.runOperatorReplay"
-        },
-        {
-          "command": "planekey.setMcpServerPath"
-        },
-        {
-          "command": "planekey.refreshMcpServer"
-        },
-        {
-          "command": "planekey.showCliSetup"
-        }
+        { "command": "planekey.refreshStatus" },
+        { "command": "planekey.openPkClientTerminal" },
+        { "command": "planekey.runRepoGuard" },
+        { "command": "planekey.runPixelGuard" },
+        { "command": "planekey.runResidueMap" },
+        { "command": "planekey.runRootRabbit" },
+        { "command": "planekey.runSafetyNet" },
+        { "command": "planekey.attestDev" },
+        { "command": "planekey.createSafeBundle" },
+        { "command": "planekey.openReports" },
+        { "command": "planekey.setPkClientPath" },
+        { "command": "planekey.setProjectRoot" },
+        { "command": "planekey.runMemoryBuild" },
+        { "command": "planekey.runRganoScan" },
+        { "command": "planekey.runCanonRank" },
+        { "command": "planekey.runGraftPlan" },
+        { "command": "planekey.runOperatorDoctor" },
+        { "command": "planekey.openIncident" },
+        { "command": "planekey.setPkMemoryPath" },
+        { "command": "planekey.setPkOperatorPath" },
+        { "command": "planekey.runFlightReport" },
+        { "command": "planekey.runCanonAnalyze" },
+        { "command": "planekey.runForensicsAttribution" },
+        { "command": "planekey.runRganoPacket" },
+        { "command": "planekey.runRootRabbitHealth" },
+        { "command": "planekey.runCoherencePack" },
+        { "command": "planekey.runTrustState" },
+        { "command": "planekey.runRpgReachable" },
+        { "command": "planekey.runMatrixCarryForward" },
+        { "command": "planekey.runDecisionsDistribution" },
+        { "command": "planekey.runOperatorReplay" },
+        { "command": "planekey.setMcpServerPath" },
+        { "command": "planekey.refreshMcpServer" },
+        { "command": "planekey.showCliSetup" }
       ],
       "explorer/context": [
-        {
-          "command": "planekey.runRepoGuard",
-          "group": "planekey@1"
-        },
-        {
-          "command": "planekey.runPixelGuard",
-          "group": "planekey@2"
-        },
-        {
-          "command": "planekey.runSafetyNet",
-          "group": "planekey@3"
-        },
-        {
-          "command": "planekey.runMemoryBuild",
-          "group": "planekey@4"
-        },
-        {
-          "command": "planekey.runRganoScan",
-          "group": "planekey@5"
-        },
-        {
-          "command": "planekey.runOperatorDoctor",
-          "group": "planekey@6"
-        }
+        { "command": "planekey.runRepoGuard", "group": "planekey@1" },
+        { "command": "planekey.runPixelGuard", "group": "planekey@2" },
+        { "command": "planekey.runSafetyNet", "group": "planekey@3" },
+        { "command": "planekey.runMemoryBuild", "group": "planekey@4" },
+        { "command": "planekey.runRganoScan", "group": "planekey@5" },
+        { "command": "planekey.runOperatorDoctor", "group": "planekey@6" }
       ],
       "editor/context": [
-        {
-          "command": "planekey.refreshStatus",
-          "group": "planekey@1"
-        }
+        { "command": "planekey.refreshStatus", "group": "planekey@1" }
       ]
     },
     "viewsContainers": {
