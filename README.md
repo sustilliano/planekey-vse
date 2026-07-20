@@ -65,9 +65,9 @@ plain-language page — what holds your code together, what looks like the
 source-of-truth, and what's worth a second look — then **Open Snapshot** to
 read it. No need to understand routes or signatures to get it. Want a live
 example first? The
-[`rgano-reports-demo`](https://github.com/sustilliano/planekey-vse/tree/rgano-reports-demo)
+[`rgano-reports-demo`](https://github.com/sustilliano/planekey-vse/blob/rgano-reports-demo/reports/snapshots/index.html)
 branch is PlaneKey run against its own code — start at its
-[`reports/snapshot.html`](https://github.com/sustilliano/planekey-vse/blob/rgano-reports-demo/reports/snapshot.html).
+[`reports/snapshot.html`](https://github.com/sustilliano/planekey-vse/blob/rgano-reports-demo/reports/snapshots/2026-07-20T06-17-54-801Z/snapshot.html).
 
 Prefer the terminal? Point the bundled `pk-memory` at any project:
 
