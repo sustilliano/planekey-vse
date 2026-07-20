@@ -60,9 +60,12 @@ server contract**, and the **report/snapshot file shapes** other tools read.
 | Change a setting's default such that existing installs behave differently | **MAJOR** (if it breaks expectations) else MINOR |
 | Raise the minimum `engines.vscode` | **MAJOR** |
 
-**Docs-only / chore-only changes** (like adding *this* file) don't move the
-version and don't need a `CHANGELOG.md` version heading. Record them in the
-commit message. When in doubt whether something is user-visible, it's a PATCH.
+**Incidental docs / chore changes** (typos, comments, tests, CI) don't move
+the version. But a change that **establishes or changes a project standard or
+a governed artifact** — like this versioning standard itself, a license, or a
+policy — is a **PATCH**: the standard is part of what PlaneKey governs, so it's
+tracked. When in doubt whether something is user- *or governance-*visible, it's
+a PATCH.
 
 **Bundled toolchain ≠ extension version.** `pk-client` and `pk-memory` carry
 their own versions (e.g. `1.5.8`). The extension's `package.json` version is
@@ -183,7 +186,8 @@ A release is inconsistent if these disagree. CI should check 1↔2↔3.
 | `0.5.0` | Rollup release of the above | Features → **MINOR** |
 | `0.6.0` | Predictive typing rebuilt to run locally from reports | New capability → **MINOR** |
 | `0.7.0` | Hands-on "Get Started" welcome | New feature → **MINOR** |
-| _this doc_ | Versioning standard | Docs-only → **no bump** |
+| `0.7.1` | This versioning standard added | Governed standard → **PATCH** |
+| `0.8.0` | Version-integrity check in the snapshot system | New capability → **MINOR** |
 
 ---
 

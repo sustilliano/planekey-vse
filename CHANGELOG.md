@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.1
+
+- Add the PlaneKey versioning standard, `docs/VERSIONING.md` (referenced from
+  `AGENTS.md`): SemVer + the VS Code Marketplace constraints, the
+  commit→bump mapping, and the append-only changelog rule. Establishing a
+  governed standard is itself tracked — hence a PATCH, not "no bump."
+
 ## 0.7.0
 
 - **Hands-on "Get Started" welcome.** A first-run (and on-demand via
