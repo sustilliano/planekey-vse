@@ -2,7 +2,7 @@
   "name": "planekey-trust-layer",
   "displayName": "PlaneKey Trust Layer",
   "description": "One download, three surfaces: the PlaneKey toolchain (pk-client, pk-memory, Env-Observer MCP server) bundled into an IDE trust/control layer for AI-built software — use it in the editor, from the CLI, or over MCP.",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "publisher": "planekey",
   "license": "UNLICENSED",
   "engines": {
@@ -43,6 +43,10 @@
       { "id": "planekey.envObserver", "label": "PlaneKey Env-Observer" }
     ],
     "commands": [
+      { "command": "planekey.openChat", "title": "PlaneKey: Open Chat", "category": "PlaneKey", "icon": "$(comment-discussion)" },
+      { "command": "planekey.openChatDocs", "title": "PlaneKey: Open Chat — Docs Search", "category": "PlaneKey", "icon": "$(search)" },
+      { "command": "planekey.openChatDirect", "title": "PlaneKey: Open Chat — Direct (E2EE)", "category": "PlaneKey", "icon": "$(mail)" },
+      { "command": "planekey.openInbox", "title": "PlaneKey: Open Inbox", "category": "PlaneKey", "icon": "$(inbox)" },
       { "command": "planekey.refreshStatus", "title": "PlaneKey: Refresh Trust Status", "category": "PlaneKey" },
       { "command": "planekey.openPkClientTerminal", "title": "PlaneKey: Open pk-client Terminal", "category": "PlaneKey", "icon": "$(terminal)" },
       { "command": "planekey.indexCodebase", "title": "PlaneKey: Index Codebase Memory (Predictive Typing)", "category": "PlaneKey", "icon": "$(symbol-class)" },
@@ -85,6 +89,10 @@
     ],
     "menus": {
       "commandPalette": [
+        { "command": "planekey.openChat" },
+        { "command": "planekey.openChatDocs" },
+        { "command": "planekey.openChatDirect" },
+        { "command": "planekey.openInbox" },
         { "command": "planekey.refreshStatus" },
         { "command": "planekey.openPkClientTerminal" },
         { "command": "planekey.indexCodebase" },
@@ -136,6 +144,12 @@
       ],
       "editor/context": [
         { "command": "planekey.refreshStatus", "group": "planekey@1" }
+      ],
+      "view/title": [
+        { "command": "planekey.openChat", "when": "view == planekeyTrustView", "group": "navigation@1" },
+        { "command": "planekey.openInbox", "when": "view == planekeyTrustView", "group": "navigation@2" },
+        { "command": "planekey.openChat", "when": "view == planekeyActionsView", "group": "navigation@1" },
+        { "command": "planekey.openInbox", "when": "view == planekeyActionsView", "group": "navigation@2" }
       ]
     },
     "viewsContainers": {

@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.4.2
+
+- Surface the PlaneKey Chat control board in the editor. The `ChatPanel`
+  webview (Your AI / Docs / Direct / Inbox / Settings) is now wired into
+  the extension and reachable from:
+  - Command Palette — `PlaneKey: Open Chat`, `PlaneKey: Open Inbox`,
+    plus channel shortcuts for Docs search and Direct (E2EE) send.
+  - The PlaneKey sidebar — title-bar chat/inbox buttons on both views and
+    "Open Chat" / "Open Inbox" entries at the top of the Actions list.
+  - `planekey.openInbox` deep-links straight into the warren inbox.
+
+  The panel is backed by the bundled pk-client and polls the warren inbox
+  every 45s, badging unread count on the panel title.
+
 ## 0.2.1
 
 - Add five new commands that drive the pk-client v0.1.5.8 bridge-consumer

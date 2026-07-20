@@ -6,6 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const { PredictiveTypingProvider } = require('./providers/predictiveTypingProvider');
+const { ChatPanel } = require('./panels/chatPanel');
 
 const EXT_VERSION = '0.2.4';
 const OUTPUT_NAME = 'PlaneKey';
@@ -15,6 +16,7 @@ let statusBar;
 let trustProvider;
 let actionProvider;
 let predictiveProvider;
+let chatPanel;
 // Install root of THIS extension — the bundled toolchain (pk-client,
 // pk-memory, the MCP server) lives under <extensionRoot>/toolchain/, so a
 // fresh install works with zero config in the editor, from the CLI, and
@@ -68,6 +70,17 @@ function activate(context) {
   );
   appendLog('[Predictive] Inline completion provider registered.');
 
+  // ── Chat control board (WebviewPanel) ────────────────────────────────────
+  chatPanel = new ChatPanel(
+    context,
+    getPkClient,
+    getNode,
+    getProjectRoot,
+    (msg) => appendLog(msg)
+  );
+  context.subscriptions.push({ dispose: () => chatPanel && chatPanel.dispose() });
+  appendLog('[Chat] Control board registered.');
+
   const commands = [
     ['planekey.refreshStatus', refreshStatus],
     ['planekey.runRepoGuard', () => runScan('RepoGuard', ['repoguard', 'scan', getProjectRoot()], { parse: true })],
@@ -103,6 +116,11 @@ function activate(context) {
     ['planekey.refreshMcpServer', () => { mcpDidChange.fire(); vscode.window.showInformationMessage('PlaneKey MCP: re-registered with the MCP host.'); }],
     ['planekey.showCliSetup', showCliSetup],
     ['planekey.openPkClientTerminal', openPkClientTerminal],
+    // Chat control board
+    ['planekey.openChat', () => chatPanel.open('ai')],
+    ['planekey.openChatDocs', () => chatPanel.open('docs')],
+    ['planekey.openChatDirect', () => chatPanel.open('direct')],
+    ['planekey.openInbox', () => chatPanel.openInbox()],
     // Predictive typing commands
     ['planekey.indexCodebase', indexCodebase],
     ['planekey.buildDB', buildDB],
@@ -832,6 +850,8 @@ class ActionProvider {
   getChildren(element) {
     if (element) return [];
     return [
+      commandItem('Open Chat', 'planekey.openChat', 'comment-discussion'),
+      commandItem('Open Inbox', 'planekey.openInbox', 'inbox'),
       commandItem('Refresh Trust Status', 'planekey.refreshStatus', 'refresh'),
       commandItem('Open pk-client Terminal', 'planekey.openPkClientTerminal', 'terminal'),
       commandItem('── Predictive Typing ──', '', 'symbol-keyword'),
