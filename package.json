@@ -36,7 +36,8 @@
         "planekey.memory.maxRiskScore": { "type": "number", "default": 30, "minimum": 0, "maximum": 100, "description": "Maximum risk score for a pk-client pattern to be surfaced." },
         "planekey.memory.excludeSignals": { "type": "array", "default": ["agent_runtime_residue", "secret_or_private_material"], "description": "Never suggest patterns carrying these residue signals." },
         "planekey.db.enabled": { "type": "boolean", "default": true, "description": "Include suggestions from pk-client coherence pack." },
-        "planekey.cache.ttl": { "type": "number", "default": 30, "description": "Predictive typing cache TTL in seconds." }
+        "planekey.cache.ttl": { "type": "number", "default": 30, "description": "Predictive typing cache TTL in seconds." },
+        "planekey.snapshotOnStartup": { "type": "boolean", "default": false, "description": "Run PlaneKey: Snapshot Workspace automatically when the extension activates (generates the full Rgano/TMrFS report set under the reports folder)." }
       }
     },
     "mcpServerDefinitionProviders": [
@@ -51,6 +52,7 @@
       { "command": "planekey.openPkClientTerminal", "title": "PlaneKey: Open pk-client Terminal", "category": "PlaneKey", "icon": "$(terminal)" },
       { "command": "planekey.indexCodebase", "title": "PlaneKey: Index Codebase Memory (Predictive Typing)", "category": "PlaneKey", "icon": "$(symbol-class)" },
       { "command": "planekey.buildDB", "title": "PlaneKey: Build Repo DB (Predictive Typing)", "category": "PlaneKey", "icon": "$(database)" },
+      { "command": "planekey.snapshotWorkspace", "title": "PlaneKey: Snapshot Workspace (all reports)", "category": "PlaneKey", "icon": "$(device-camera)" },
       { "command": "planekey.refreshCache", "title": "PlaneKey: Refresh Predictive Cache", "category": "PlaneKey", "icon": "$(refresh)" },
       { "command": "planekey.showMemoryStats", "title": "PlaneKey: Show Memory Stats", "category": "PlaneKey", "icon": "$(graph)" },
       { "command": "planekey.togglePredictive", "title": "PlaneKey: Toggle Predictive Typing", "category": "PlaneKey", "icon": "$(eye)" },
@@ -97,6 +99,7 @@
         { "command": "planekey.openPkClientTerminal" },
         { "command": "planekey.indexCodebase" },
         { "command": "planekey.buildDB" },
+        { "command": "planekey.snapshotWorkspace" },
         { "command": "planekey.refreshCache" },
         { "command": "planekey.showMemoryStats" },
         { "command": "planekey.togglePredictive" },
@@ -149,7 +152,8 @@
         { "command": "planekey.openChat", "when": "view == planekeyTrustView", "group": "navigation@1" },
         { "command": "planekey.openInbox", "when": "view == planekeyTrustView", "group": "navigation@2" },
         { "command": "planekey.openChat", "when": "view == planekeyActionsView", "group": "navigation@1" },
-        { "command": "planekey.openInbox", "when": "view == planekeyActionsView", "group": "navigation@2" }
+        { "command": "planekey.openInbox", "when": "view == planekeyActionsView", "group": "navigation@2" },
+        { "command": "planekey.snapshotWorkspace", "when": "view == planekeyActionsView", "group": "navigation@3" }
       ]
     },
     "viewsContainers": {
@@ -165,6 +169,6 @@
     }
   },
   "scripts": {
-    "smoke": "node -c src/extension.js && node -c src/providers/predictiveTypingProvider.js"
+    "smoke": "node -c src/extension.js && node -c src/providers/predictiveTypingProvider.js && node -c src/panels/chatPanel.js && node -c toolchain/pk-memory/pk-memory.js"
   }
 }

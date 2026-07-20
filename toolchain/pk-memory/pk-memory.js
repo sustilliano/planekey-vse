@@ -188,21 +188,64 @@ function residueSignals(rel,text){
   return Array.from(new Set(signals));
 }
 
+// Marks which characters are real CODE (1) vs inside a comment, a fenced
+// documentation block, or a string/template literal (0). Route/pattern
+// extractors consult this so they stop hallucinating routes from examples
+// that live in comments or docs — the #1 source of phantom route counts
+// (a tool that documents `app.get('/x')` in a comment was "finding" it).
+//
+// Deliberately line-oriented so a stray regex literal (common in this very
+// file) can only desync one line, never the whole scan. Cross-line state is
+// tracked only for /* */ block comments and ``` fenced blocks.
+function computeCodeMask(text, ext){
+  const n = text.length;
+  const mask = new Uint8Array(n); // 0 = non-code by default; 1 = code
+  const hashComment = ext === '.py' || ext === '.rb' || ext === '.sh' ||
+                      ext === '.yml' || ext === '.yaml' || ext === '.toml';
+  let pos = 0, inBlock = false, inFence = false;
+  const lines = text.split('\n');
+  for(const line of lines){
+    // A ``` fence line (optionally escaped as \`\`\` inside a template
+    // literal, optionally with a language tag) toggles doc-example mode.
+    if(/^\s*\\*`\\*`\\*`/.test(line)){ inFence = !inFence; pos += line.length + 1; continue; }
+    if(inFence){ pos += line.length + 1; continue; }
+    let j = 0, str = null;
+    while(j < line.length){
+      const c = line[j], c2 = line[j + 1];
+      if(inBlock){ if(c === '*' && c2 === '/'){ inBlock = false; j += 2; continue; } j++; continue; }
+      if(str){ if(c === '\\'){ j += 2; continue; } if(c === str){ str = null; j++; continue; } j++; continue; }
+      if(c === '/' && c2 === '/') break;                 // line comment → rest non-code
+      if(hashComment && c === '#') break;                // Python/shell comment
+      if(c === '/' && c2 === '*'){ inBlock = true; j += 2; continue; }
+      if(c === "'" || c === '"' || c === '`'){ str = c; j++; continue; }
+      mask[pos + j] = 1;                                 // ordinary code char
+      j++;
+    }
+    pos += line.length + 1; // account for the '\n' removed by split
+  }
+  return mask;
+}
+
 function extractStructure(rel,text){
   const out={imports:[],routes:[],functions:[],html_ids:[],forms:[],scripts:[],package_scripts:{},config_keys:[]};
   if(!text) return out;
   const add=(arr,v)=>{ if(v && !arr.includes(v)) arr.push(v); };
   let m;
+  // Only accept a route whose ANCHOR token (app/router/@/#) is real code, not
+  // an example inside a comment or a ``` doc fence. See computeCodeMask.
+  const codeMask = computeCodeMask(text, path.extname(rel).toLowerCase());
+  const anchorIsCode = (idx) => codeMask[idx] === 1;
   const importRx=/\b(?:require\(['"]([^'"]+)['"]\)|import\s+(?:[^'";]+\s+from\s+)?['"]([^'"]+)['"])/g;
   while((m=importRx.exec(text))) add(out.imports,m[1]||m[2]);
-  const routeRx=/\b(?:app|router)\.(get|post|put|patch|delete|use)\s*\(\s*['"`]([^'"`]+)['"`]/g;
-  while((m=routeRx.exec(text))) add(out.routes, `${m[1].toUpperCase()} ${m[2]}`);
+  const routeRx=/\b(?:app|router)\.(get|post|put|patch|delete|use)\s*\(\s*['"`]([^'"`\n]+)['"`]/g;
+  while((m=routeRx.exec(text))){ if(anchorIsCode(m.index)) add(out.routes, `${m[1].toUpperCase()} ${m[2]}`); }
   // Rust / Actix attribute macros: #[get("/path")], #[post("/path")], etc.
   const rustRouteRx=/#\[\s*(get|post|put|patch|delete)\s*\(\s*"([^"]+)"\s*\)\s*\]/g;
-  while((m=rustRouteRx.exec(text))) add(out.routes, `${m[1].toUpperCase()} ${m[2]}`);
+  while((m=rustRouteRx.exec(text))){ if(anchorIsCode(m.index)) add(out.routes, `${m[1].toUpperCase()} ${m[2]}`); }
   // Python / Flask / FastAPI / Quart: @app.route("/path"), @router.get("/path"), etc.
   const pyRouteRx=/@(?:app|bp|router|api|blueprint)\.(route|get|post|put|patch|delete)\s*\(\s*['"]([^'"]+)['"]/g;
   while((m=pyRouteRx.exec(text))){
+    if(!anchorIsCode(m.index)) continue;
     const method = m[1] === 'route' ? 'GET' : m[1].toUpperCase();
     add(out.routes, `${method} ${m[2]}`);
   }

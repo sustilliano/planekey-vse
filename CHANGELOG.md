@@ -25,6 +25,27 @@
   software is proprietary, governed by `LICENSE-PROPRIETARY` — not
   public-domain.
 
+- **Fix phantom route counts in Rgano/TMrFS reports.** `pk-memory`'s
+  structure extractor scanned raw text, so it counted example routes that
+  live inside comments and ```` ``` ```` documentation fences (e.g.
+  `pk-memory.js` reported `routes=2` from its own regex docs;
+  `planekey-init.ts` reported `routes=2` from doc examples). Route
+  detection is now code-aware via a line-oriented `computeCodeMask` — a
+  route only counts when its anchor token (`app`/`router`/`@`/`#`) is real
+  code, not a comment or fenced example. Real Express/Flask/FastAPI/Actix
+  routes still detect correctly; the previously-phantom counts are now a
+  truthful `0` for this repo (a VS Code extension + CLIs with no HTTP
+  server). Also constrained the JS route path to a single line.
+
+- **New `PlaneKey: Snapshot Workspace (all reports)` command.** Runs the
+  full report suite — Rgano structure scan, Repository Planning Graph,
+  timeline, and TMrFS memory — into the reports folder under a stable
+  `snapshot` name, so repeated runs overwrite the same folders and can be
+  diffed across a work session (the "pk snapshot" behaviour). Available in
+  the Command Palette, the PlaneKey sidebar title bar, and the Actions
+  list. Opt into running it on activation with
+  `planekey.snapshotOnStartup`.
+
 ## 0.2.1
 
 - Add five new commands that drive the pk-client v0.1.5.8 bridge-consumer

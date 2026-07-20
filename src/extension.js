@@ -124,6 +124,7 @@ function activate(context) {
     // Predictive typing commands
     ['planekey.indexCodebase', indexCodebase],
     ['planekey.buildDB', buildDB],
+    ['planekey.snapshotWorkspace', snapshotWorkspace],
     ['planekey.refreshCache', refreshPredictiveCache],
     ['planekey.showMemoryStats', showMemoryStats],
     ['planekey.togglePredictive', togglePredictive]
@@ -162,6 +163,12 @@ function activate(context) {
 
   updateCurrentFileRisk();
   refreshStatus({ quiet: true });
+
+  // Optional: generate a full workspace snapshot on init (like pk snapshot),
+  // so a fresh session starts with an up-to-date report set.
+  if (getConfig().get('snapshotOnStartup')) {
+    setTimeout(() => snapshotWorkspace({ quiet: true }), 2500);
+  }
 }
 
 function deactivate() {
@@ -302,6 +309,58 @@ function refreshPredictiveCache() {
   if (predictiveProvider) {
     predictiveProvider.invalidateCache();
     vscode.window.showInformationMessage('PlaneKey: Predictive typing cache cleared.');
+  }
+}
+
+// ── Workspace snapshot ───────────────────────────────────────────────────────
+// One command that runs the whole RootRabbit:Rgano / TMrFS report suite into
+// <reportRoot> under a stable name, so repeated runs overwrite the same folders
+// and you can diff them across a work session (the "pk snapshot" behaviour).
+const SNAPSHOT_REPORTS = [
+  { label: 'Rgano structure scan', args: (root, out) => ['rgano', 'scan', root, '--name', 'snapshot', '--out', out] },
+  { label: 'Repository Planning Graph', args: (root, out) => ['memory', 'rpg', root, '--name', 'snapshot', '--out', out] },
+  { label: 'Timeline', args: (root, out) => ['memory', 'timeline', root, '--name', 'snapshot', '--out', out] },
+  { label: 'TMrFS memory', args: (root, out) => ['memory', 'build', root, '--name', 'snapshot', '--out', out] }
+];
+
+async function snapshotWorkspace(options = {}) {
+  const root = getProjectRoot();
+  const out = getReportRoot();
+  const quiet = !!options.quiet;
+  const results = await vscode.window.withProgress({
+    location: vscode.ProgressLocation.Notification,
+    title: 'PlaneKey: Workspace snapshot',
+    cancellable: false
+  }, async (progress) => {
+    const acc = [];
+    for (let i = 0; i < SNAPSHOT_REPORTS.length; i++) {
+      const step = SNAPSHOT_REPORTS[i];
+      progress.report({ message: `${step.label} (${i + 1}/${SNAPSHOT_REPORTS.length})`, increment: 100 / SNAPSHOT_REPORTS.length });
+      const r = await runBinary(getPkMemory(), step.args(root, out), { cwd: root });
+      lastState.lastRuns[`Snapshot: ${step.label}`] = {
+        time: new Date().toISOString(), code: r.code, ok: !r.error,
+        summary: summarizeOutput(r.stdout + '\n' + r.stderr)
+      };
+      acc.push({ label: step.label, ok: !r.error });
+    }
+    return acc;
+  });
+
+  if (predictiveProvider) predictiveProvider.invalidateCache();
+  refreshViews();
+
+  const failed = results.filter(r => !r.ok);
+  if (quiet) {
+    appendLog(`[Snapshot] Wrote ${results.length - failed.length}/${results.length} reports to ${out}`);
+    return;
+  }
+  if (failed.length) {
+    vscode.window.showWarningMessage(`PlaneKey snapshot: ${failed.length} of ${results.length} reports had issues (${failed.map(f => f.label).join(', ')}). See the PlaneKey output.`);
+  } else {
+    const pick = await vscode.window.showInformationMessage(
+      `PlaneKey snapshot complete — ${results.length} reports written to ${out}.`, 'Open Reports'
+    );
+    if (pick === 'Open Reports') openReports();
   }
 }
 
@@ -852,6 +911,7 @@ class ActionProvider {
     return [
       commandItem('Open Chat', 'planekey.openChat', 'comment-discussion'),
       commandItem('Open Inbox', 'planekey.openInbox', 'inbox'),
+      commandItem('Snapshot Workspace (all reports)', 'planekey.snapshotWorkspace', 'device-camera'),
       commandItem('Refresh Trust Status', 'planekey.refreshStatus', 'refresh'),
       commandItem('Open pk-client Terminal', 'planekey.openPkClientTerminal', 'terminal'),
       commandItem('── Predictive Typing ──', '', 'symbol-keyword'),
