@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.5.0
+
+Feature release. Rolls up the work recorded as 0.4.2–0.4.7 below, which is
+kept as the development trail rather than collapsed. Highlights:
+
+- Chat control board surfaced in the editor (0.4.2).
+- README + license corrected for the already-bundled v0.4.0 toolchain (0.4.3).
+- `pk-memory` route detection made code-aware and broadened from HTTP-only to
+  cross-domain interconnectivity (0.4.4).
+- `PlaneKey: Snapshot Workspace` and the plain-language snapshot page
+  (0.4.5–0.4.6).
+- Snapshots made immutable and append-only, with a kept history (0.4.7).
+
+This is a minor bump (features), not a patch — the 0.4.2–0.4.7 numbering was
+patch-style and is retained only as the in-development record.
+
 ## 0.4.2
 
 - Surface the PlaneKey Chat control board in the editor. The `ChatPanel`
@@ -81,6 +97,28 @@
   ledger of every run; `index.html` is the derived history view; each snapshot
   keeps its own `snapshot.html`. (Recorded as a correction rather than an edit
   to the bullets above, so the changelog stays an accurate record.)
+
+## 0.4.1
+
+- Predictive-typing inline completion provider, backed by pk-client +
+  pk-memory (commit `ec0d97d`, where the version bumped 0.4.0 → 0.4.1).
+- PlaneKey emblem / theme-aware activity-bar icon (`assets/planekey.svg`).
+
+  _Backfilled from git history — these versions predate the changelog and
+  were not recorded at the time._
+
+## 0.4.0
+
+- Initial published extension. The PlaneKey toolchain — pk-client, pk-memory,
+  and the Env-Observer MCP server — was bundled under `toolchain/` in this
+  first upload ("one download, three surfaces"), shipped as
+  `planekey-trust-layer-0.4.0.vsix`. No later commit "adds" pk-client because
+  it was present from this initial 0.4.0 upload (verified: the 0.4.0 vsix
+  contains `toolchain/pk-client/`, and the initial commit `9d11a1c` is
+  `version: 0.4.0`).
+- Proprietary license (`LICENSE-PROPRIETARY`); pk-client terminal command.
+
+  _Backfilled from git history / the 0.4.0 vsix._
 
 ## 0.2.1
 

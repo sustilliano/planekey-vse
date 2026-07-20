@@ -2,7 +2,7 @@
   "name": "planekey-trust-layer",
   "displayName": "PlaneKey Trust Layer",
   "description": "One download, three surfaces: the PlaneKey toolchain (pk-client, pk-memory, Env-Observer MCP server) bundled into an IDE trust/control layer for AI-built software — use it in the editor, from the CLI, or over MCP.",
-  "version": "0.4.7",
+  "version": "0.5.0",
   "publisher": "planekey",
   "license": "SEE LICENSE IN LICENSE-PROPRIETARY",
   "engines": {
