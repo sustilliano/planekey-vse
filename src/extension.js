@@ -115,6 +115,7 @@ function activate(context) {
     ['planekey.refreshMcpServer', () => { mcpDidChange.fire(); vscode.window.showInformationMessage('PlaneKey MCP: re-registered with the MCP host.'); }],
     ['planekey.showCliSetup', showCliSetup],
     ['planekey.openPkClientTerminal', openPkClientTerminal],
+    ['planekey.pkClientDoctor', pkClientDoctor],
     // Chat control board
     ['planekey.getStarted', () => openWelcome(context, appendLog)],
     ['planekey.openChat', () => chatPanel.open('ai')],
@@ -461,6 +462,14 @@ function showSnapshotCard(html) {
   );
   snapshotCardPanel.webview.html = html;
   snapshotCardPanel.onDidDispose(() => { snapshotCardPanel = null; });
+}
+
+async function pkClientDoctor() {
+  await runPk(['self', 'version'], { cwd: getProjectRoot() });
+  const d = await runPk(['self', 'doctor'], { cwd: getProjectRoot() });
+  output.show(true);
+  if (d.error) vscode.window.showWarningMessage('PlaneKey pk-client doctor found issues — see the PlaneKey output.');
+  else vscode.window.showInformationMessage('PlaneKey pk-client doctor: PASS.');
 }
 
 async function showMemoryStats() {
@@ -1012,6 +1021,7 @@ class ActionProvider {
       commandItem('Check Version Integrity', 'planekey.checkVersion', 'versions'),
       commandItem('Refresh Trust Status', 'planekey.refreshStatus', 'refresh'),
       commandItem('Open pk-client Terminal', 'planekey.openPkClientTerminal', 'terminal'),
+      commandItem('pk-client Doctor', 'planekey.pkClientDoctor', 'pulse'),
       commandItem('── Predictive Typing ──', '', 'symbol-keyword'),
       commandItem('Index Codebase (Memory)', 'planekey.indexCodebase', 'symbol-class'),
       commandItem('Build Repo DB', 'planekey.buildDB', 'database'),

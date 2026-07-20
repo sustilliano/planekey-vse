@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.9.0
+
+- **Routes now count CLI command dispatch** — a 50-verb CLI no longer reads as
+  one route. `pk-memory` detects `cmd === 'x'` (optionally `&& sub === 'y'`)
+  and commander/yargs `.command('x')`. On this repo, `pk-client.js` went from
+  `routes=1` to `routes=86` (its real surface); `pk-memory.js` from 0 to 11.
+- **Structure score is now 0–100.** The rgano scan normalizes the raw
+  structure score to a 0–100 "structural surface" relative to the busiest file
+  (max → 100) — a measure of routes + functions + imports (centrality), *not*
+  quality. Raw score kept for lineage; JSON schema → `…scan.v2` with an
+  additive `score_100` field. (Answers "what does a 437.5 do better than a
+  197": nothing — it just carries more structure; now `100` vs `27`.)
+- **pk-client `self doctor` works in the editor** via the new
+  **`PlaneKey: pk-client Doctor`** command (runs `self version` + `self
+  doctor`). Running it surfaced — and this release fixes — a real gap: the
+  bundled `toolchain/pk-client/` was missing its `package.json` (doctor
+  FAILed, `self version` reported `package: unknown`). Added it; doctor now
+  PASSES and the version resolves to `0.1.5.14`.
+
 ## 0.8.0
 
 - **Version integrity is now a check in the snapshot system** — the same

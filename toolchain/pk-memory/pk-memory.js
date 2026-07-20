@@ -277,6 +277,13 @@ function extractStructure(rel,text){
   while((m=evtRx.exec(text))){ if(anchorIsCode(m.index) && !EVT_NOISE.has(m[1])) add(out.routes, `EVT ${m[1]}`); }
   const msgTypeRx=/postMessage\s*\(\s*\{[^}]*?\btype\s*:\s*['"]([A-Za-z_][\w.:-]{1,60})['"]/g;
   while((m=msgTypeRx.exec(text))){ if(anchorIsCode(m.index)) add(out.routes, `MSG ${m[1]}`); }
+  // CLI subcommand dispatch — a tool routes its verbs too. `cmd === 'x'`
+  // (optionally `&& sub === 'y'`) and commander/yargs `.command('x')`. Without
+  // this, a 50-verb CLI like pk-client reads as a single route.
+  const cliDispatchRx=/\b(?:cmd|command|subcommand|action|verb)\s*===\s*['"]([A-Za-z][\w:.-]{0,40})['"](?:\s*&&\s*(?:sub|subcommand|subcmd|subCmd)\s*===\s*['"]([A-Za-z][\w:.-]{0,40})['"])?/g;
+  while((m=cliDispatchRx.exec(text))){ if(anchorIsCode(m.index)) add(out.routes, `CLI ${m[1]}${m[2] ? ' ' + m[2] : ''}`); }
+  const cliCommandRx=/\.command\s*\(\s*['"]([A-Za-z][\w:.-]{0,40})/g;
+  while((m=cliCommandRx.exec(text))){ if(anchorIsCode(m.index)) add(out.routes, `CLI ${m[1]}`); }
   const fnRx=/\b(?:async\s+)?function\s+([A-Za-z_$][\w$]*)\s*\(|\bconst\s+([A-Za-z_$][\w$]*)\s*=\s*(?:async\s*)?\([^)]*\)\s*=>/g;
   while((m=fnRx.exec(text))) add(out.functions,m[1]||m[2]);
   const idRx=/\bid\s*=\s*['"]([^'"]+)['"]/g;
@@ -572,9 +579,15 @@ async function commandRganoScan(input,flags){
   const outDir=path.join(path.resolve(flags.out || './reports'),'rgano',name);
   const bundle=await buildMemory(input, flags);
   const rows=bundle.memory.nodes.map(n=>({path:n.path, source:n.source_archive, role:n.role, signature:n.rgano_signature, signature_short:n.rgano_signature_short, structure_score:n.structure_score, routes:n.structure.routes.length, imports:n.structure.imports.length, functions:n.structure.functions.length, html_ids:n.structure.html_ids.length, risk_score:n.risk_score, residue_signals:n.residue_signals}));
-  await writeJson(path.join(outDir,'RGANO_STRUCTURE_SCAN.json'), {schema:'rootrabbit.rgano-structure-scan.v1', generated_at:nowIso(), version:VERSION, rows});
-  const md=['# RootRabbit:Rgano Structure Scan','','Rgano signatures group artifacts by structural behavior rather than exact hash.',''];
-  for(const r of rows.sort((a,b)=>b.structure_score-a.structure_score).slice(0,120)) md.push(`- ${r.structure_score.toFixed(1)} ${r.role} ${r.path} routes=${r.routes} imports=${r.imports} sig=${r.signature_short}`);
+  // Normalize the raw structure_score to a 0–100 "structural surface" score,
+  // relative to the busiest file in the scan (max → 100). It measures how much
+  // structure/dispatch a file carries (routes + functions + imports…), i.e.
+  // surface & centrality — NOT quality. The raw score is kept for lineage.
+  const maxScore=rows.reduce((mx,r)=>Math.max(mx, r.structure_score||0), 0) || 1;
+  for(const r of rows) r.score_100=Math.round(100*(r.structure_score||0)/maxScore);
+  await writeJson(path.join(outDir,'RGANO_STRUCTURE_SCAN.json'), {schema:'rootrabbit.rgano-structure-scan.v2', generated_at:nowIso(), version:VERSION, score_scale:'0-100 relative to busiest file', rows});
+  const md=['# RootRabbit:Rgano Structure Scan','','Score is 0–100 structural surface (routes + functions + imports…) relative to the busiest file — centrality, not quality.',''];
+  for(const r of rows.sort((a,b)=>b.score_100-a.score_100 || b.structure_score-a.structure_score).slice(0,120)) md.push(`- ${String(r.score_100).padStart(3)} ${r.role} ${r.path} routes=${r.routes} imports=${r.imports} sig=${r.signature_short}`);
   await writeText(path.join(outDir,'RGANO_STRUCTURE_SCAN.md'), md.join('\n')+'\n');
   console.log(`Rgano structure scan written: ${outDir}`);
 }
