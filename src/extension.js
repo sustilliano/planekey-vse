@@ -7,6 +7,7 @@ const path = require('path');
 const os = require('os');
 const { PredictiveTypingProvider } = require('./providers/predictiveTypingProvider');
 const { ChatPanel } = require('./panels/chatPanel');
+const { openWelcome } = require('./panels/welcomePanel');
 
 const EXT_VERSION = '0.2.4';
 const OUTPUT_NAME = 'PlaneKey';
@@ -115,6 +116,7 @@ function activate(context) {
     ['planekey.showCliSetup', showCliSetup],
     ['planekey.openPkClientTerminal', openPkClientTerminal],
     // Chat control board
+    ['planekey.getStarted', () => openWelcome(context, appendLog)],
     ['planekey.openChat', () => chatPanel.open('ai')],
     ['planekey.openChatDocs', () => chatPanel.open('docs')],
     ['planekey.openChatDirect', () => chatPanel.open('direct')],
@@ -161,6 +163,12 @@ function activate(context) {
 
   updateCurrentFileRisk();
   refreshStatus({ quiet: true });
+
+  // First run: show the hands-on welcome once (choose follow-along or dive-in).
+  if (!context.globalState.get('planekey.welcomed')) {
+    context.globalState.update('planekey.welcomed', true);
+    setTimeout(() => { try { openWelcome(context, appendLog); } catch (_) {} }, 1200);
+  }
 
   // Optional: generate a full workspace snapshot on init (like pk snapshot),
   // so a fresh session starts with an up-to-date report set.
@@ -967,6 +975,7 @@ class ActionProvider {
   getChildren(element) {
     if (element) return [];
     return [
+      commandItem('Get Started', 'planekey.getStarted', 'rocket'),
       commandItem('Open Chat', 'planekey.openChat', 'comment-discussion'),
       commandItem('Open Inbox', 'planekey.openInbox', 'inbox'),
       commandItem('Snapshot Workspace (all reports)', 'planekey.snapshotWorkspace', 'device-camera'),

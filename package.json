@@ -2,7 +2,7 @@
   "name": "planekey-trust-layer",
   "displayName": "PlaneKey Trust Layer",
   "description": "One download, three surfaces: the PlaneKey toolchain (pk-client, pk-memory, Env-Observer MCP server) bundled into an IDE trust/control layer for AI-built software — use it in the editor, from the CLI, or over MCP.",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "publisher": "planekey",
   "license": "SEE LICENSE IN LICENSE-PROPRIETARY",
   "engines": {
@@ -46,6 +46,7 @@
       { "id": "planekey.envObserver", "label": "PlaneKey Env-Observer" }
     ],
     "commands": [
+      { "command": "planekey.getStarted", "title": "PlaneKey: Get Started", "category": "PlaneKey", "icon": "$(rocket)" },
       { "command": "planekey.openChat", "title": "PlaneKey: Open Chat", "category": "PlaneKey", "icon": "$(comment-discussion)" },
       { "command": "planekey.openChatDocs", "title": "PlaneKey: Open Chat — Docs Search", "category": "PlaneKey", "icon": "$(search)" },
       { "command": "planekey.openChatDirect", "title": "PlaneKey: Open Chat — Direct (E2EE)", "category": "PlaneKey", "icon": "$(mail)" },
@@ -93,6 +94,7 @@
     ],
     "menus": {
       "commandPalette": [
+        { "command": "planekey.getStarted" },
         { "command": "planekey.openChat" },
         { "command": "planekey.openChatDocs" },
         { "command": "planekey.openChatDirect" },
@@ -171,6 +173,6 @@
     }
   },
   "scripts": {
-    "smoke": "node -c src/extension.js && node -c src/providers/predictiveTypingProvider.js && node -c src/providers/predictiveIndex.js && node -c src/panels/chatPanel.js && node -c src/panels/snapshotCard.js && node -c toolchain/pk-memory/pk-memory.js"
+    "smoke": "node -c src/extension.js && node -c src/providers/predictiveTypingProvider.js && node -c src/providers/predictiveIndex.js && node -c src/panels/chatPanel.js && node -c src/panels/snapshotCard.js && node -c src/panels/welcomePanel.js && node -c toolchain/pk-memory/pk-memory.js"
   }
 }

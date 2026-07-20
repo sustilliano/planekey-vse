@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.7.0
+
+- **Hands-on "Get Started" welcome.** A first-run (and on-demand via
+  `PlaneKey: Get Started`) welcome screen that lets the user choose how to
+  begin, and actually *runs* the steps:
+  - **Follow along** — replay the predictive-typing job: index the codebase,
+    then type and watch canon-ranked ghost text appear (button runs
+    `planekey.indexCodebase`; "How we built this" opens the changelog).
+  - **Dive in** — take a first snapshot of your own project (button runs
+    `planekey.snapshotWorkspace`), then keep snapshotting to build history.
+
+  No template repo, no branches, no monorepo: the "there → here" is the
+  append-only snapshot history the user builds by doing it. Shown once via
+  `globalState`; reopenable from the Command Palette and the Actions list.
+  New `src/panels/welcomePanel.js`.
+
 ## 0.6.0
 
 - **Predictive typing is now one working, local feature.** It was split
