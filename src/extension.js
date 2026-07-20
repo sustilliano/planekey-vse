@@ -458,7 +458,7 @@ function showSnapshotCard(html) {
   }
   snapshotCardPanel = vscode.window.createWebviewPanel(
     'planekeySnapshot', 'PlaneKey Snapshot', vscode.ViewColumn.Active,
-    { enableScripts: false, retainContextWhenHidden: true }
+    { enableScripts: true, retainContextWhenHidden: true }
   );
   snapshotCardPanel.webview.html = html;
   snapshotCardPanel.onDidDispose(() => { snapshotCardPanel = null; });

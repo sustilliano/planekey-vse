@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.10.0
+
+- **The snapshot report is now interactive and self-explaining** — not just
+  numbers. The generated `snapshot.html` (shown in the editor and writable to
+  disk for GitHub Pages) gains:
+  - a **"How to read this — and why these numbers exist"** glossary: what a
+    snapshot is, what the 0–100 score means (centrality, not quality), what
+    routes/canon/residue are and why they're tracked;
+  - an **"Explore all files"** table over *every* file (not just the top few):
+    sort any column, filter by name/role, toggle raw ↔ 0–100 score, and click
+    a row to expand its signature, raw score, and residue flags.
+  - Self-contained (inline CSS/JS, nonce-CSP), so the same file renders in the
+    VS Code webview *and* standalone / on GitHub Pages. The snapshot webview
+    now runs scripts. Older (v1) reports without `score_100` are normalized on
+    the fly, so the report works against any snapshot.
+
 ## 0.9.0
 
 - **Routes now count CLI command dispatch** — a 50-verb CLI no longer reads as
