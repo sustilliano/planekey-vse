@@ -82,14 +82,25 @@ Reports land under `reports/`. A taste of the Rgano structure scan
 structural behavior, not exact hash:
 
 ```text
-- 432.5 code_module toolchain/pk-client/bin/pk-client.js routes=0 imports=10 sig=0b28385bd5fa4c38
-- 140.5 code_module toolchain/pk-memory/pk-memory.js     routes=2 imports=6  sig=d81104beabb2c33f
-- 106.5 code_module src/extension.js                     routes=0 imports=6  sig=abfaebd58ec1d806
+- 437.5 code_module      toolchain/pk-client/bin/pk-client.js  routes=1  imports=10
+- 197.0 package_manifest package.json                          routes=39 imports=0
+- 111.5 code_module      src/extension.js                      routes=1  imports=6
+-  37.5 planekey_component src/planekey-integration-glue.ts    routes=2  imports=5
 ```
 
-Inside the editor the same reports are one click away in the PlaneKey
-sidebar: **Run Rgano Structure Scan**, **Build TMrFS Memory**, **Build Repo
-DB**, and friends.
+**`routes` measures interconnectivity, not just HTTP.** RootRabbit:Rgano
+gauges how functions, tools and programs connect in *any* codebase — so a
+route is any named hand-off point: HTTP endpoints (`GET /path`), IDE/tool
+commands (`CMD`/`CALL`, including a manifest's `contributes.commands`),
+registered tools (`TOOL`, e.g. MCP), pub/sub & IPC channels (`EVT`), and
+webview messages (`MSG`). That's why this repo — a VS Code extension with no
+web server — still lights up: `package.json` is the 39-command wiring hub.
+
+Inside the editor, generate the whole suite in one step with
+**`PlaneKey: Snapshot Workspace (all reports)`** (or enable
+`planekey.snapshotOnStartup` to run it on activation) — or run any single
+report from the sidebar: **Run Rgano Structure Scan**, **Build TMrFS
+Memory**, **Build Repo DB**.
 
 ## Configure
 
