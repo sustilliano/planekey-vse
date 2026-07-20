@@ -1,60 +1,76 @@
 # Changelog
 
-## 0.4.2 (unreleased)
+## 0.4.2
 
-Chat interface
+- Surface the PlaneKey Chat control board in the editor. The `ChatPanel`
+  webview (Your AI / Docs / Direct / Inbox / Settings) is now wired into
+  the extension and reachable from:
+  - Command Palette — `PlaneKey: Open Chat`, `PlaneKey: Open Inbox`,
+    plus channel shortcuts for Docs search and Direct (E2EE) send.
+  - The PlaneKey sidebar — title-bar chat/inbox buttons on both views and
+    "Open Chat" / "Open Inbox" entries at the top of the Actions list.
+  - `planekey.openInbox` deep-links straight into the warren inbox.
 
-- Wire the existing `ChatPanel` webview (Your AI / Docs / Direct / Inbox /
-  Settings) into the extension; it was built but never registered. Commands
-  `planekey.openChat`, `planekey.openChatDocs`, `planekey.openChatDirect`,
-  `planekey.openInbox`; entries in the Command Palette, the sidebar title
-  bars, and the Actions list. Backed by the bundled pk-client; polls the
-  warren inbox every 45s and badges unread count on the panel title.
+  The panel is backed by the bundled pk-client and polls the warren inbox
+  every 45s, badging unread count on the panel title.
 
-License
+- Docs: rewrite README for the v0.4.0 "one download, three surfaces"
+  model — the pk-client / pk-memory / Env-Observer MCP toolchain is now
+  bundled under `toolchain/`, not a separate install. Adds a reproducible
+  RootRabbit:Rgano report example pointing at the `rgano-reports-demo`
+  branch, plus a License section.
+- License: `package.json` now declares
+  `SEE LICENSE IN LICENSE-PROPRIETARY` instead of `UNLICENSED`, so npm /
+  marketplace tooling stops reporting the extension as unlicensed. The
+  software is proprietary, governed by `LICENSE-PROPRIETARY` — not
+  public-domain.
 
-- `package.json` `license` changed from `UNLICENSED` to
-  `SEE LICENSE IN LICENSE-PROPRIETARY`. `UNLICENSED` is what made tooling
-  report the extension as unlicensed; the software is proprietary, governed
-  by `LICENSE-PROPRIETARY`.
+- **Routes now measure interconnectivity, not just HTTP — and stop
+  hallucinating.** Two problems in `pk-memory`'s structure extractor:
+  1. *Too narrow.* "Routes" only matched web-framework endpoints
+     (`app.get`, `@app.route`, `#[get]`), so a VS Code extension / CLI /
+     MCP server — which route via **commands, tools, events and IPC**, not
+     HTTP — always scored `routes=0`, making the reports look broken even
+     though the repo is densely interconnected. RootRabbit:Rgano exists to
+     gauge how functions, tools and programs connect in *any* codebase, so
+     route detection now also captures: `CMD`/`CALL` (command registration
+     & invocation, incl. a VS Code manifest's `contributes.commands`),
+     `TOOL` (registered tools / MCP), `EVT` (pub/sub & IPC channels, with
+     generic stream/process lifecycle events filtered out), and `MSG`
+     (webview/worker `postMessage` types). `package.json` now reports its
+     44 command routes; `chatPanel.js` its webview IPC channels; etc.
+  2. *False positives.* It scanned raw text, counting example routes inside
+     comments and ```` ``` ```` doc fences (`pk-memory.js` "found" 2 in its
+     own regex docs). Detection is now code-aware via a line-oriented
+     `computeCodeMask`: a route only counts when its anchor token is real
+     code, not a comment or fenced example. Verified against
+     JS/Python/Rust fixtures. JS route path constrained to one line.
 
-pk-memory route detection
+- **New `PlaneKey: Snapshot Workspace (all reports)` command.** Runs the
+  full report suite — Rgano structure scan, Repository Planning Graph,
+  timeline, and TMrFS memory — into the reports folder under a stable
+  `snapshot` name, so repeated runs overwrite the same folders and can be
+  diffed across a work session (the "pk snapshot" behaviour). Available in
+  the Command Palette, the PlaneKey sidebar title bar, and the Actions
+  list. Opt into running it on activation with
+  `planekey.snapshotOnStartup`.
 
-- Broadened beyond HTTP. It previously matched only web-framework endpoints
-  (`app.get`, `@app.route`, `#[get]`), so extensions/CLIs/MCP servers scored
-  `routes=0`. It now also records `CMD`/`CALL` (command register/invoke,
-  including a VS Code manifest's `contributes.commands`), `TOOL` (registered
-  tools / MCP), `EVT` (`.on`/`.emit`/`.subscribe` channels, minus generic
-  stream/process lifecycle events), and `MSG` (`postMessage({type})`).
-- Made comment-aware. It was counting example routes written inside comments
-  and ```` ``` ```` fences (e.g. `pk-memory.js` counted routes from its own
-  regex docs). A route now counts only when its anchor token is real code
-  (`computeCodeMask`). JS route path capture constrained to one line.
-- Checked against JS/Python/Rust fixtures: real routes detected, commented
-  and fenced examples ignored.
+- **A snapshot you can just look at.** The snapshot also renders a single,
+  plain-language page (`reports/snapshot.html`, and **Open Snapshot** in the
+  editor) — what holds the codebase together, what looks like source-of-truth,
+  and what's worth a review — no need to understand routes or signatures to
+  read it. The full technical reports stay in `reports/` for anyone who wants
+  to look under the hood. Generated by `src/panels/snapshotCard.js`.
 
-Workspace snapshot
-
-- `PlaneKey: Snapshot Workspace (all reports)` runs the four reports (Rgano
-  structure scan, Repository Planning Graph, timeline, TMrFS memory) into an
-  **immutable, timestamped folder**, `reports/snapshots/<id>/`. Snapshots are
-  never overwritten — each run is added and past runs are kept — so the
-  reports accumulate a real history over time.
-- `reports/snapshots/index.json` is the append-only ledger of every run;
-  `index.html` is a derived history view (links every snapshot, newest first).
-- Each snapshot also gets `snapshot.html`, a plain-language summary page
-  (most-connected pieces, source-of-truth candidates, items to review),
-  openable in the editor via **Open Snapshot**. Generated by
-  `src/panels/snapshotCard.js`.
-- In the Command Palette, sidebar title bars, and Actions list.
-  `planekey.snapshotOnStartup` runs it on activation.
-
-Docs
-
-- README rewritten for the bundled v0.4.0 toolchain (pk-client, pk-memory,
-  Env-Observer MCP under `toolchain/`), leading with the snapshot page and a
-  "try it on your own code" path rather than internals. `rgano-reports-demo`
-  branch holds a worked example run against this repo.
+- **Correction — snapshots are append-only, not overwritten.** The two
+  bullets above described "Snapshot Workspace" writing to a stable `snapshot`
+  name and overwriting the same folders each run. That was wrong for a
+  memory/lineage tool — overwriting destroys history. Changed before release:
+  each run now writes an immutable, timestamped `reports/snapshots/<id>/` that
+  is never overwritten. `reports/snapshots/index.json` is the append-only
+  ledger of every run; `index.html` is the derived history view; each snapshot
+  keeps its own `snapshot.html`. (Recorded as a correction rather than an edit
+  to the bullets above, so the changelog stays an accurate record.)
 
 ## 0.2.1
 
