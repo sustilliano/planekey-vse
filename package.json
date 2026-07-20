@@ -169,6 +169,6 @@
     }
   },
   "scripts": {
-    "smoke": "node -c src/extension.js && node -c src/providers/predictiveTypingProvider.js && node -c src/panels/chatPanel.js && node -c toolchain/pk-memory/pk-memory.js"
+    "smoke": "node -c src/extension.js && node -c src/providers/predictiveTypingProvider.js && node -c src/panels/chatPanel.js && node -c src/panels/snapshotCard.js && node -c toolchain/pk-memory/pk-memory.js"
   }
 }

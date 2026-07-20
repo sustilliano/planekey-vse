@@ -55,15 +55,18 @@ Dev mode: open this folder and press `F5` to launch an Extension Development Hos
 Use the bundled `pk-client` from your own terminal via **`PlaneKey: Show CLI
 Setup`**, which prints a ready-to-paste shell alias.
 
-## Example — run the RootRabbit:Rgano reports on a fresh branch
+## See your codebase at a glance
 
-The bundled `pk-memory` can profile any repository — including this one. The
+Run **`PlaneKey: Snapshot Workspace`** and PlaneKey hands you a single,
+plain-language page — what holds your code together, what looks like the
+source-of-truth, and what's worth a second look — then **Open Snapshot** to
+read it. No need to understand routes or signatures to get it. Want a live
+example first? The
 [`rgano-reports-demo`](https://github.com/sustilliano/planekey-vse/tree/rgano-reports-demo)
-branch is a **live snapshot** of that suite run against this repo; see
-[`reports/`](https://github.com/sustilliano/planekey-vse/tree/rgano-reports-demo/reports)
-there for the committed output.
+branch is PlaneKey run against its own code — start at its
+[`reports/snapshot.html`](https://github.com/sustilliano/planekey-vse/blob/rgano-reports-demo/reports/snapshot.html).
 
-Reproduce it yourself — clone `main`, branch, and run the reports:
+Prefer the terminal? Point the bundled `pk-memory` at any project:
 
 ```bash
 git clone https://github.com/sustilliano/planekey-vse

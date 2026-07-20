@@ -349,19 +349,48 @@ async function snapshotWorkspace(options = {}) {
   if (predictiveProvider) predictiveProvider.invalidateCache();
   refreshViews();
 
+  // Turn the raw reports into one welcoming, plain-language page you can just
+  // look at — the front door, no blueprints required. The technical reports
+  // stay in <reportRoot> for anyone who wants them.
+  let cardHtml = '';
+  try {
+    const { loadSnapshotData, buildSnapshotHtml } = require('./panels/snapshotCard');
+    const data = loadSnapshotData(out, {});
+    cardHtml = buildSnapshotHtml(data, { title: path.basename(root) || 'workspace' });
+    fs.writeFileSync(path.join(out, 'snapshot.html'), cardHtml);
+  } catch (e) { appendLog('[Snapshot] card build skipped: ' + e.message); }
+
   const failed = results.filter(r => !r.ok);
   if (quiet) {
     appendLog(`[Snapshot] Wrote ${results.length - failed.length}/${results.length} reports to ${out}`);
+    if (cardHtml) showSnapshotCard(cardHtml);
     return;
   }
   if (failed.length) {
     vscode.window.showWarningMessage(`PlaneKey snapshot: ${failed.length} of ${results.length} reports had issues (${failed.map(f => f.label).join(', ')}). See the PlaneKey output.`);
-  } else {
-    const pick = await vscode.window.showInformationMessage(
-      `PlaneKey snapshot complete — ${results.length} reports written to ${out}.`, 'Open Reports'
-    );
-    if (pick === 'Open Reports') openReports();
+    return;
   }
+  const actions = cardHtml ? ['Open Snapshot', 'Open Reports'] : ['Open Reports'];
+  const pick = await vscode.window.showInformationMessage(
+    `PlaneKey snapshot complete — ${results.length} reports for ${path.basename(root) || 'workspace'}.`, ...actions
+  );
+  if (pick === 'Open Snapshot') showSnapshotCard(cardHtml);
+  else if (pick === 'Open Reports') openReports();
+}
+
+let snapshotCardPanel;
+function showSnapshotCard(html) {
+  if (snapshotCardPanel) {
+    snapshotCardPanel.webview.html = html;
+    snapshotCardPanel.reveal(vscode.ViewColumn.Active, false);
+    return;
+  }
+  snapshotCardPanel = vscode.window.createWebviewPanel(
+    'planekeySnapshot', 'PlaneKey Snapshot', vscode.ViewColumn.Active,
+    { enableScripts: false, retainContextWhenHidden: true }
+  );
+  snapshotCardPanel.webview.html = html;
+  snapshotCardPanel.onDidDispose(() => { snapshotCardPanel = null; });
 }
 
 async function showMemoryStats() {
