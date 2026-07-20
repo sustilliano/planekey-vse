@@ -1,10 +1,10 @@
 {
-  "demo-src": {
+  "demo-src2": {
     "kind": "folder",
     "root": "<repo-root>",
     "origin_chain": [],
     "file_count": 36,
-    "bytes": 873505,
+    "bytes": 874543,
     "roles": {
       "artifact": 5,
       "json_config": 2,
