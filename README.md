@@ -88,19 +88,27 @@ Reports land under `reports/`. A taste of the Rgano structure scan
 structural behavior, not exact hash:
 
 ```text
-- 437.5 code_module      toolchain/pk-client/bin/pk-client.js  routes=1  imports=10
-- 197.0 package_manifest package.json                          routes=39 imports=0
-- 111.5 code_module      src/extension.js                      routes=1  imports=6
--  37.5 planekey_component src/planekey-integration-glue.ts    routes=2  imports=5
+- 100 code_module      toolchain/pk-client/bin/pk-client.js  routes=86 imports=10
+-  27 package_manifest package.json                          routes=46 imports=0
+-  22 code_module      toolchain/pk-memory/pk-memory.js      routes=11 imports=6
+-  15 code_module      src/extension.js                      routes=2  imports=10
 ```
 
+**The score is 0–100 "structural surface" — routes + functions + imports,
+relative to the busiest file — not a quality grade.** So `pk-client.js` at
+`100` isn't *better* than `package.json` at `27`; it just carries the most
+structure (86 command routes plus hundreds of functions). It's a measure of
+centrality, not merit.
+
 **`routes` measures interconnectivity, not just HTTP.** RootRabbit:Rgano
-gauges how functions, tools and programs connect in *any* codebase — so a
-route is any named hand-off point: HTTP endpoints (`GET /path`), IDE/tool
-commands (`CMD`/`CALL`, including a manifest's `contributes.commands`),
-registered tools (`TOOL`, e.g. MCP), pub/sub & IPC channels (`EVT`), and
-webview messages (`MSG`). That's why this repo — a VS Code extension with no
-web server — still lights up: `package.json` is the 39-command wiring hub.
+gauges how functions, tools and programs connect in *any* codebase — any
+named hand-off point: HTTP endpoints (`GET /path`), IDE/tool commands
+(`CMD`/`CALL`, including a manifest's `contributes.commands`), registered
+tools (`TOOL`, e.g. MCP), pub/sub & IPC channels (`EVT`), webview messages
+(`MSG`), and **CLI subcommand dispatch** (`CLI`). That last one is why a
+50-verb tool like `pk-client` shows **86 routes, not 1** — and why this
+repo, a VS Code extension with no web server, still lights up (`package.json`
+is the command wiring hub).
 
 Inside the editor, generate the whole suite in one step with
 **`PlaneKey: Snapshot Workspace (all reports)`** (or enable
