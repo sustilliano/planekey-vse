@@ -1,0 +1,465 @@
+{
+  "tmrfs:file:61d3b17a007f4792:0": {
+    "path": ".DS_Store",
+    "role": "artifact",
+    "layer": "unknown",
+    "status": "candidate",
+    "residue_score": 0,
+    "canon_score": 0.5,
+    "risk_score": 0,
+    "residue_signals": []
+  },
+  "tmrfs:file:f9a1cb217c7fa5b8:1": {
+    "path": ".vscode/launch.json",
+    "role": "json_config",
+    "layer": "unknown",
+    "status": "candidate",
+    "residue_score": 0,
+    "canon_score": 0.5,
+    "risk_score": 0,
+    "residue_signals": []
+  },
+  "tmrfs:file:3d601ee77979395c:2": {
+    "path": ".vscodeignore",
+    "role": "artifact",
+    "layer": "unknown",
+    "status": "candidate",
+    "residue_score": 0,
+    "canon_score": 0.5,
+    "risk_score": 0,
+    "residue_signals": []
+  },
+  "tmrfs:file:5123eb0e48e23b5a:3": {
+    "path": "AGENTS.md",
+    "role": "documentation",
+    "layer": "unknown",
+    "status": "candidate",
+    "residue_score": 0.15,
+    "canon_score": 0.5,
+    "risk_score": 10,
+    "residue_signals": [
+      "agent_runtime_residue"
+    ]
+  },
+  "tmrfs:file:ff60cf7a8a1f8f28:4": {
+    "path": "CHANGELOG.md",
+    "role": "documentation",
+    "layer": "unknown",
+    "status": "candidate",
+    "residue_score": 0,
+    "canon_score": 0.5,
+    "risk_score": 0,
+    "residue_signals": []
+  },
+  "tmrfs:file:743fd6a3c5a7dc1a:5": {
+    "path": "LICENSE-PROPRIETARY",
+    "role": "artifact",
+    "layer": "unknown",
+    "status": "candidate",
+    "residue_score": 0,
+    "canon_score": 0.5,
+    "risk_score": 0,
+    "residue_signals": []
+  },
+  "tmrfs:file:53f98715f96ab929:6": {
+    "path": "README.md",
+    "role": "documentation",
+    "layer": "unknown",
+    "status": "candidate",
+    "residue_score": 0,
+    "canon_score": 0.5,
+    "risk_score": 0,
+    "residue_signals": []
+  },
+  "tmrfs:file:d65165279105ca67:7": {
+    "path": "assets/.DS_Store",
+    "role": "artifact",
+    "layer": "unknown",
+    "status": "candidate",
+    "residue_score": 0,
+    "canon_score": 0.5,
+    "risk_score": 0,
+    "residue_signals": []
+  },
+  "tmrfs:file:7294663f564bd0a8:8": {
+    "path": "assets/pk-mark.svg",
+    "role": "artifact",
+    "layer": "unknown",
+    "status": "candidate",
+    "residue_score": 0,
+    "canon_score": 0.5,
+    "risk_score": 0,
+    "residue_signals": []
+  },
+  "tmrfs:file:2fa79f43e9793c2a:9": {
+    "path": "assets/planekey.svg",
+    "role": "planekey_component",
+    "layer": "unknown",
+    "status": "candidate",
+    "residue_score": 0,
+    "canon_score": 0.7,
+    "risk_score": 0,
+    "residue_signals": []
+  },
+  "tmrfs:file:7c6906b9898632b7:10": {
+    "path": "docs/ENTERPRISE_WEDGE.md",
+    "role": "documentation",
+    "layer": "unknown",
+    "status": "review",
+    "residue_score": 0.3,
+    "canon_score": 0.5,
+    "risk_score": 40,
+    "residue_signals": [
+      "tracking_or_analytics_surface",
+      "email_capture_surface"
+    ]
+  },
+  "tmrfs:file:a18554eb13b6c511:11": {
+    "path": "docs/IDE_SERVER_BRANCH.md",
+    "role": "documentation",
+    "layer": "unknown",
+    "status": "candidate",
+    "residue_score": 0,
+    "canon_score": 0.5,
+    "risk_score": 0,
+    "residue_signals": []
+  },
+  "tmrfs:file:b11f79f4c3147658:12": {
+    "path": "docs/ROADMAP.md",
+    "role": "documentation",
+    "layer": "unknown",
+    "status": "candidate",
+    "residue_score": 0,
+    "canon_score": 0.5,
+    "risk_score": 0,
+    "residue_signals": []
+  },
+  "tmrfs:file:eb432bfd5c0b6cbb:13": {
+    "path": "docs/predictive-typing-alt/.vscode-test.js",
+    "role": "code_module",
+    "layer": "unknown",
+    "status": "candidate",
+    "residue_score": 0,
+    "canon_score": 0.5,
+    "risk_score": 0,
+    "residue_signals": []
+  },
+  "tmrfs:file:27eae4c0073fa383:14": {
+    "path": "docs/predictive-typing-alt/extension.ts",
+    "role": "code_module",
+    "layer": "unknown",
+    "status": "candidate",
+    "residue_score": 0,
+    "canon_score": 0.5,
+    "risk_score": 0,
+    "residue_signals": []
+  },
+  "tmrfs:file:cde0e735b7532d58:15": {
+    "path": "docs/predictive-typing-alt/package.json",
+    "role": "package_manifest",
+    "layer": "unknown",
+    "status": "candidate",
+    "residue_score": 0,
+    "canon_score": 0.7,
+    "risk_score": 0,
+    "residue_signals": []
+  },
+  "tmrfs:file:bbc0cc5e4d6239f2:16": {
+    "path": "docs/predictive-typing-alt/tsconfig.json",
+    "role": "json_config",
+    "layer": "unknown",
+    "status": "candidate",
+    "residue_score": 0,
+    "canon_score": 0.5,
+    "risk_score": 0,
+    "residue_signals": []
+  },
+  "tmrfs:file:52de90745e1271ca:17": {
+    "path": "package.json",
+    "role": "package_manifest",
+    "layer": "unknown",
+    "status": "candidate",
+    "residue_score": 0.15,
+    "canon_score": 0.7,
+    "risk_score": 10,
+    "residue_signals": [
+      "agent_runtime_residue"
+    ]
+  },
+  "tmrfs:file:3059cd73b3786d31:18": {
+    "path": "planekey-trust-layer-0.4.0.vsix",
+    "role": "planekey_component",
+    "layer": "unknown",
+    "status": "candidate",
+    "residue_score": 0,
+    "canon_score": 0.7,
+    "risk_score": 0,
+    "residue_signals": []
+  },
+  "tmrfs:file:1dc2720d921160b4:19": {
+    "path": "reports/rgano/vse-rgano/RGANO_STRUCTURE_SCAN.json",
+    "role": "rgano_component",
+    "layer": "unknown",
+    "status": "review",
+    "residue_score": 0.45,
+    "canon_score": 0.5,
+    "risk_score": 50,
+    "residue_signals": [
+      "agent_runtime_residue",
+      "tracking_or_analytics_surface",
+      "email_capture_surface"
+    ]
+  },
+  "tmrfs:file:8cbc5ef5d60f4285:20": {
+    "path": "reports/rgano/vse-rgano/RGANO_STRUCTURE_SCAN.md",
+    "role": "rgano_component",
+    "layer": "unknown",
+    "status": "candidate",
+    "residue_score": 0.15,
+    "canon_score": 0.5,
+    "risk_score": 10,
+    "residue_signals": [
+      "agent_runtime_residue"
+    ]
+  },
+  "tmrfs:file:0ca3a008359e3820:21": {
+    "path": "reports/rpg/vse-rpg/rpg.md",
+    "role": "documentation",
+    "layer": "unknown",
+    "status": "candidate",
+    "residue_score": 0,
+    "canon_score": 0.5,
+    "risk_score": 0,
+    "residue_signals": []
+  },
+  "tmrfs:file:b38af3023b93db34:22": {
+    "path": "reports/rpg/vse-rpg/rpg.sql",
+    "role": "artifact",
+    "layer": "unknown",
+    "status": "candidate",
+    "residue_score": 0.15,
+    "canon_score": 0.5,
+    "risk_score": 10,
+    "residue_signals": [
+      "agent_runtime_residue"
+    ]
+  },
+  "tmrfs:file:0d7a41bfce1c4e5b:23": {
+    "path": "reports/timeline/vse-timeline/pk-timeline.md",
+    "role": "documentation",
+    "layer": "unknown",
+    "status": "candidate",
+    "residue_score": 0,
+    "canon_score": 0.5,
+    "risk_score": 0,
+    "residue_signals": []
+  },
+  "tmrfs:file:89f267a4565bff69:24": {
+    "path": "reports/timeline/vse-timeline/pk-timeline.sql",
+    "role": "artifact",
+    "layer": "unknown",
+    "status": "review",
+    "residue_score": 0.45,
+    "canon_score": 0.5,
+    "risk_score": 50,
+    "residue_signals": [
+      "agent_runtime_residue",
+      "tracking_or_analytics_surface",
+      "email_capture_surface"
+    ]
+  },
+  "tmrfs:file:f1d09b3151437b1d:25": {
+    "path": "src/extension.js",
+    "role": "code_module",
+    "layer": "unknown",
+    "status": "candidate",
+    "residue_score": 0.15,
+    "canon_score": 0.5,
+    "risk_score": 10,
+    "residue_signals": [
+      "agent_runtime_residue"
+    ]
+  },
+  "tmrfs:file:b9e35f38508ae942:26": {
+    "path": "src/planekey-init.ts",
+    "role": "planekey_component",
+    "layer": "unknown",
+    "status": "candidate",
+    "residue_score": 0.15,
+    "canon_score": 0.8,
+    "risk_score": 20,
+    "residue_signals": [
+      "tracking_or_analytics_surface"
+    ]
+  },
+  "tmrfs:file:4993cd2e27eda6ba:27": {
+    "path": "src/planekey-integration-glue.ts",
+    "role": "planekey_component",
+    "layer": "unknown",
+    "status": "candidate",
+    "residue_score": 0,
+    "canon_score": 0.8,
+    "risk_score": 0,
+    "residue_signals": []
+  },
+  "tmrfs:file:d85b7625b8e2a74b:28": {
+    "path": "src/planekey-licensing-compliance.ts",
+    "role": "planekey_component",
+    "layer": "unknown",
+    "status": "candidate",
+    "residue_score": 0.15,
+    "canon_score": 0.7,
+    "risk_score": 20,
+    "residue_signals": [
+      "tracking_or_analytics_surface"
+    ]
+  },
+  "tmrfs:file:3f16ec5490019f78:29": {
+    "path": "src/planekey-multi-project.ts",
+    "role": "planekey_component",
+    "layer": "unknown",
+    "status": "candidate",
+    "residue_score": 0,
+    "canon_score": 0.7,
+    "risk_score": 0,
+    "residue_signals": []
+  },
+  "tmrfs:file:502979a18f0b38fb:30": {
+    "path": "src/planekey-vcs-hooks.ts",
+    "role": "planekey_component",
+    "layer": "unknown",
+    "status": "candidate",
+    "residue_score": 0,
+    "canon_score": 0.7,
+    "risk_score": 0,
+    "residue_signals": []
+  },
+  "tmrfs:file:bc9dc5f405bd7e38:31": {
+    "path": "src/planekey-vcs-integration.ts",
+    "role": "planekey_component",
+    "layer": "unknown",
+    "status": "candidate",
+    "residue_score": 0,
+    "canon_score": 0.7,
+    "risk_score": 0,
+    "residue_signals": []
+  },
+  "tmrfs:file:1899772150fcae66:32": {
+    "path": "src/providers/predictiveTypingProvider.js",
+    "role": "code_module",
+    "layer": "unknown",
+    "status": "candidate",
+    "residue_score": 0,
+    "canon_score": 0.5,
+    "risk_score": 0,
+    "residue_signals": []
+  },
+  "tmrfs:file:b4cd7560b0c76cbb:33": {
+    "path": "toolchain/mcp/claude_desktop_config.example.json",
+    "role": "agent_runtime",
+    "layer": "unknown",
+    "status": "forensic_only",
+    "residue_score": 1,
+    "canon_score": 0.5,
+    "risk_score": 70,
+    "residue_signals": [
+      "agent_runtime_residue"
+    ]
+  },
+  "tmrfs:file:dc7fd83c77574c59:34": {
+    "path": "toolchain/mcp/cursor_mcp_config.example.json",
+    "role": "agent_runtime",
+    "layer": "unknown",
+    "status": "forensic_only",
+    "residue_score": 1,
+    "canon_score": 0.5,
+    "risk_score": 70,
+    "residue_signals": [
+      "agent_runtime_residue"
+    ]
+  },
+  "tmrfs:file:228f865917c1b2b6:35": {
+    "path": "toolchain/mcp/planekey_env_observer_server.py",
+    "role": "agent_runtime",
+    "layer": "unknown",
+    "status": "forensic_only",
+    "residue_score": 1,
+    "canon_score": 0.5,
+    "risk_score": 70,
+    "residue_signals": [
+      "agent_runtime_residue"
+    ]
+  },
+  "tmrfs:file:5fdd77b2b527897c:36": {
+    "path": "toolchain/mcp/requirements.txt",
+    "role": "agent_runtime",
+    "layer": "unknown",
+    "status": "forensic_only",
+    "residue_score": 1,
+    "canon_score": 0.5,
+    "risk_score": 70,
+    "residue_signals": [
+      "agent_runtime_residue"
+    ]
+  },
+  "tmrfs:file:79e8d585fda5c54f:37": {
+    "path": "toolchain/pk-client/bin/pk-client.js",
+    "role": "code_module",
+    "layer": "unknown",
+    "status": "block",
+    "residue_score": 0.6,
+    "canon_score": 0.5,
+    "risk_score": 90,
+    "residue_signals": [
+      "agent_runtime_residue",
+      "tracking_or_analytics_surface",
+      "email_capture_surface",
+      "prompt_injection_residue"
+    ]
+  },
+  "tmrfs:file:043e82c453d33898:38": {
+    "path": "toolchain/pk-client/lib/detect.js",
+    "role": "code_module",
+    "layer": "unknown",
+    "status": "candidate",
+    "residue_score": 0,
+    "canon_score": 0.5,
+    "risk_score": 0,
+    "residue_signals": []
+  },
+  "tmrfs:file:3cbd17ebad965913:39": {
+    "path": "toolchain/pk-client/lib/mmx.js",
+    "role": "code_module",
+    "layer": "unknown",
+    "status": "candidate",
+    "residue_score": 0,
+    "canon_score": 0.5,
+    "risk_score": 0,
+    "residue_signals": []
+  },
+  "tmrfs:file:135653f504eae9c4:40": {
+    "path": "toolchain/pk-client/lib/schema.js",
+    "role": "code_module",
+    "layer": "unknown",
+    "status": "candidate",
+    "residue_score": 0,
+    "canon_score": 0.5,
+    "risk_score": 0,
+    "residue_signals": []
+  },
+  "tmrfs:file:356a04c16cf675eb:41": {
+    "path": "toolchain/pk-memory/pk-memory.js",
+    "role": "code_module",
+    "layer": "unknown",
+    "status": "block",
+    "residue_score": 0.6,
+    "canon_score": 0.6,
+    "risk_score": 90,
+    "residue_signals": [
+      "agent_runtime_residue",
+      "tracking_or_analytics_surface",
+      "email_capture_surface",
+      "prompt_injection_residue"
+    ]
+  }
+}

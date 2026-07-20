@@ -1,0 +1,128 @@
+{
+  ".DS_Store": [
+    "tmrfs:file:61d3b17a007f4792:0"
+  ],
+  ".vscode/launch.json": [
+    "tmrfs:file:f9a1cb217c7fa5b8:1"
+  ],
+  ".vscodeignore": [
+    "tmrfs:file:3d601ee77979395c:2"
+  ],
+  "AGENTS.md": [
+    "tmrfs:file:5123eb0e48e23b5a:3"
+  ],
+  "CHANGELOG.md": [
+    "tmrfs:file:ff60cf7a8a1f8f28:4"
+  ],
+  "LICENSE-PROPRIETARY": [
+    "tmrfs:file:743fd6a3c5a7dc1a:5"
+  ],
+  "README.md": [
+    "tmrfs:file:53f98715f96ab929:6"
+  ],
+  "assets/.DS_Store": [
+    "tmrfs:file:d65165279105ca67:7"
+  ],
+  "assets/pk-mark.svg": [
+    "tmrfs:file:7294663f564bd0a8:8"
+  ],
+  "assets/planekey.svg": [
+    "tmrfs:file:2fa79f43e9793c2a:9"
+  ],
+  "docs/ENTERPRISE_WEDGE.md": [
+    "tmrfs:file:7c6906b9898632b7:10"
+  ],
+  "docs/IDE_SERVER_BRANCH.md": [
+    "tmrfs:file:a18554eb13b6c511:11"
+  ],
+  "docs/ROADMAP.md": [
+    "tmrfs:file:b11f79f4c3147658:12"
+  ],
+  "docs/predictive-typing-alt/.vscode-test.js": [
+    "tmrfs:file:eb432bfd5c0b6cbb:13"
+  ],
+  "docs/predictive-typing-alt/extension.ts": [
+    "tmrfs:file:27eae4c0073fa383:14"
+  ],
+  "docs/predictive-typing-alt/package.json": [
+    "tmrfs:file:cde0e735b7532d58:15"
+  ],
+  "docs/predictive-typing-alt/tsconfig.json": [
+    "tmrfs:file:bbc0cc5e4d6239f2:16"
+  ],
+  "package.json": [
+    "tmrfs:file:52de90745e1271ca:17"
+  ],
+  "planekey-trust-layer-0.4.0.vsix": [
+    "tmrfs:file:3059cd73b3786d31:18"
+  ],
+  "reports/rgano/vse-rgano/RGANO_STRUCTURE_SCAN.json": [
+    "tmrfs:file:1dc2720d921160b4:19"
+  ],
+  "reports/rgano/vse-rgano/RGANO_STRUCTURE_SCAN.md": [
+    "tmrfs:file:8cbc5ef5d60f4285:20"
+  ],
+  "reports/rpg/vse-rpg/rpg.md": [
+    "tmrfs:file:0ca3a008359e3820:21"
+  ],
+  "reports/rpg/vse-rpg/rpg.sql": [
+    "tmrfs:file:b38af3023b93db34:22"
+  ],
+  "reports/timeline/vse-timeline/pk-timeline.md": [
+    "tmrfs:file:0d7a41bfce1c4e5b:23"
+  ],
+  "reports/timeline/vse-timeline/pk-timeline.sql": [
+    "tmrfs:file:89f267a4565bff69:24"
+  ],
+  "src/extension.js": [
+    "tmrfs:file:f1d09b3151437b1d:25"
+  ],
+  "src/planekey-init.ts": [
+    "tmrfs:file:b9e35f38508ae942:26"
+  ],
+  "src/planekey-integration-glue.ts": [
+    "tmrfs:file:4993cd2e27eda6ba:27"
+  ],
+  "src/planekey-licensing-compliance.ts": [
+    "tmrfs:file:d85b7625b8e2a74b:28"
+  ],
+  "src/planekey-multi-project.ts": [
+    "tmrfs:file:3f16ec5490019f78:29"
+  ],
+  "src/planekey-vcs-hooks.ts": [
+    "tmrfs:file:502979a18f0b38fb:30"
+  ],
+  "src/planekey-vcs-integration.ts": [
+    "tmrfs:file:bc9dc5f405bd7e38:31"
+  ],
+  "src/providers/predictiveTypingProvider.js": [
+    "tmrfs:file:1899772150fcae66:32"
+  ],
+  "toolchain/mcp/claude_desktop_config.example.json": [
+    "tmrfs:file:b4cd7560b0c76cbb:33"
+  ],
+  "toolchain/mcp/cursor_mcp_config.example.json": [
+    "tmrfs:file:dc7fd83c77574c59:34"
+  ],
+  "toolchain/mcp/planekey_env_observer_server.py": [
+    "tmrfs:file:228f865917c1b2b6:35"
+  ],
+  "toolchain/mcp/requirements.txt": [
+    "tmrfs:file:5fdd77b2b527897c:36"
+  ],
+  "toolchain/pk-client/bin/pk-client.js": [
+    "tmrfs:file:79e8d585fda5c54f:37"
+  ],
+  "toolchain/pk-client/lib/detect.js": [
+    "tmrfs:file:043e82c453d33898:38"
+  ],
+  "toolchain/pk-client/lib/mmx.js": [
+    "tmrfs:file:3cbd17ebad965913:39"
+  ],
+  "toolchain/pk-client/lib/schema.js": [
+    "tmrfs:file:135653f504eae9c4:40"
+  ],
+  "toolchain/pk-memory/pk-memory.js": [
+    "tmrfs:file:356a04c16cf675eb:41"
+  ]
+}
