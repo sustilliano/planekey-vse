@@ -313,9 +313,12 @@ function refreshPredictiveCache() {
 }
 
 // ── Workspace snapshot ───────────────────────────────────────────────────────
-// One command that runs the whole RootRabbit:Rgano / TMrFS report suite into
-// <reportRoot> under a stable name, so repeated runs overwrite the same folders
-// and you can diff them across a work session (the "pk snapshot" behaviour).
+// Runs the whole RootRabbit:Rgano / TMrFS report suite into an IMMUTABLE,
+// timestamped folder: <reportRoot>/snapshots/<id>/. Snapshots are never
+// overwritten — each run is added, past runs are kept — so you accumulate an
+// honest history of the codebase over time (which is the whole point of a
+// memory / lineage tool). A running ledger (snapshots/index.json) is the
+// append-only record; snapshots/index.html is a derived view of it.
 const SNAPSHOT_REPORTS = [
   { label: 'Rgano structure scan', args: (root, out) => ['rgano', 'scan', root, '--name', 'snapshot', '--out', out] },
   { label: 'Repository Planning Graph', args: (root, out) => ['memory', 'rpg', root, '--name', 'snapshot', '--out', out] },
@@ -323,20 +326,27 @@ const SNAPSHOT_REPORTS = [
   { label: 'TMrFS memory', args: (root, out) => ['memory', 'build', root, '--name', 'snapshot', '--out', out] }
 ];
 
+// FS-safe, sortable, unique to the millisecond — never reused, never reissued.
+function snapshotId(d = new Date()) { return d.toISOString().replace(/[:.]/g, '-'); }
+
 async function snapshotWorkspace(options = {}) {
   const root = getProjectRoot();
-  const out = getReportRoot();
+  const reportRoot = getReportRoot();
   const quiet = !!options.quiet;
+  const takenAt = new Date();
+  const id = snapshotId(takenAt);
+  const snapDir = path.join(reportRoot, 'snapshots', id);
+
   const results = await vscode.window.withProgress({
     location: vscode.ProgressLocation.Notification,
-    title: 'PlaneKey: Workspace snapshot',
+    title: `PlaneKey: Snapshot ${id}`,
     cancellable: false
   }, async (progress) => {
     const acc = [];
     for (let i = 0; i < SNAPSHOT_REPORTS.length; i++) {
       const step = SNAPSHOT_REPORTS[i];
       progress.report({ message: `${step.label} (${i + 1}/${SNAPSHOT_REPORTS.length})`, increment: 100 / SNAPSHOT_REPORTS.length });
-      const r = await runBinary(getPkMemory(), step.args(root, out), { cwd: root });
+      const r = await runBinary(getPkMemory(), step.args(root, snapDir), { cwd: root });
       lastState.lastRuns[`Snapshot: ${step.label}`] = {
         time: new Date().toISOString(), code: r.code, ok: !r.error,
         summary: summarizeOutput(r.stdout + '\n' + r.stderr)
@@ -349,33 +359,51 @@ async function snapshotWorkspace(options = {}) {
   if (predictiveProvider) predictiveProvider.invalidateCache();
   refreshViews();
 
-  // Turn the raw reports into one welcoming, plain-language page you can just
-  // look at — the front door, no blueprints required. The technical reports
-  // stay in <reportRoot> for anyone who wants them.
+  // Front-door card (inside this snapshot's immutable folder) + append this
+  // run to the history ledger. Nothing here rewrites a previous snapshot.
   let cardHtml = '';
+  const title = path.basename(root) || 'workspace';
   try {
-    const { loadSnapshotData, buildSnapshotHtml } = require('./panels/snapshotCard');
-    const data = loadSnapshotData(out, {});
-    cardHtml = buildSnapshotHtml(data, { title: path.basename(root) || 'workspace' });
-    fs.writeFileSync(path.join(out, 'snapshot.html'), cardHtml);
-  } catch (e) { appendLog('[Snapshot] card build skipped: ' + e.message); }
+    const { loadSnapshotData, buildSnapshotHtml, summarizeSnapshot, buildHistoryHtml } = require('./panels/snapshotCard');
+    const data = loadSnapshotData(snapDir, {});
+    cardHtml = buildSnapshotHtml(data, { title, id, takenAt: takenAt.toISOString() });
+    fs.writeFileSync(path.join(snapDir, 'snapshot.html'), cardHtml);
+
+    const ledgerPath = path.join(reportRoot, 'snapshots', 'index.json');
+    let ledger = [];
+    try { const j = JSON.parse(fs.readFileSync(ledgerPath, 'utf8')); if (Array.isArray(j)) ledger = j; } catch (_) { /* first run */ }
+    ledger.push(Object.assign({ id, taken_at: takenAt.toISOString(), title, path: `${id}/snapshot.html` }, summarizeSnapshot(data)));
+    fs.writeFileSync(ledgerPath, JSON.stringify(ledger, null, 2) + '\n');
+    fs.writeFileSync(path.join(reportRoot, 'snapshots', 'index.html'), buildHistoryHtml(ledger, { title }));
+  } catch (e) { appendLog('[Snapshot] card/ledger skipped: ' + e.message); }
 
   const failed = results.filter(r => !r.ok);
+  const rel = path.relative(root, snapDir) || snapDir;
   if (quiet) {
-    appendLog(`[Snapshot] Wrote ${results.length - failed.length}/${results.length} reports to ${out}`);
+    appendLog(`[Snapshot] ${id}: wrote ${results.length - failed.length}/${results.length} reports to ${snapDir}`);
     if (cardHtml) showSnapshotCard(cardHtml);
     return;
   }
   if (failed.length) {
-    vscode.window.showWarningMessage(`PlaneKey snapshot: ${failed.length} of ${results.length} reports had issues (${failed.map(f => f.label).join(', ')}). See the PlaneKey output.`);
+    vscode.window.showWarningMessage(`PlaneKey snapshot ${id}: ${failed.length} of ${results.length} reports had issues (${failed.map(f => f.label).join(', ')}). See the PlaneKey output.`);
     return;
   }
-  const actions = cardHtml ? ['Open Snapshot', 'Open Reports'] : ['Open Reports'];
+  const actions = cardHtml ? ['Open Snapshot', 'History', 'Open Folder'] : ['Open Folder'];
   const pick = await vscode.window.showInformationMessage(
-    `PlaneKey snapshot complete — ${results.length} reports for ${path.basename(root) || 'workspace'}.`, ...actions
+    `PlaneKey snapshot ${id} saved — ${results.length} reports under ${rel}. Past snapshots kept.`, ...actions
   );
   if (pick === 'Open Snapshot') showSnapshotCard(cardHtml);
-  else if (pick === 'Open Reports') openReports();
+  else if (pick === 'History') openSnapshotHistory(reportRoot);
+  else if (pick === 'Open Folder') openReports();
+}
+
+function openSnapshotHistory(reportRoot) {
+  try {
+    const html = fs.readFileSync(path.join(reportRoot, 'snapshots', 'index.html'), 'utf8');
+    showSnapshotCard(html);
+  } catch (_) {
+    vscode.window.showInformationMessage('PlaneKey: no snapshot history yet — run PlaneKey: Snapshot Workspace.');
+  }
 }
 
 let snapshotCardPanel;

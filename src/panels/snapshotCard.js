@@ -84,8 +84,8 @@ function buildSnapshotHtml(data, opts = {}) {
   const seenCanon = new Set();
   const trusted = canon.filter(c => c.path && !seenCanon.has(c.path) && seenCanon.add(c.path)).slice(0, 6);
 
-  const date = new Date(data.generatedAt);
-  const dateStr = isNaN(date) ? '' : date.toISOString().slice(0, 10);
+  const date = new Date(opts.takenAt || data.generatedAt);
+  const dateStr = isNaN(date) ? '' : date.toISOString().replace('T', ' ').slice(0, 19) + ' UTC';
 
   const stat = (n, label, tone) =>
     `<div class="stat ${tone || ''}"><div class="stat-n">${esc(n)}</div><div class="stat-l">${esc(label)}</div></div>`;
@@ -186,7 +186,7 @@ a{color:var(--burrow);}
     <h1>${esc(title)}</h1>
     <p class="lede">A plain-language look at what's in this codebase and how its pieces connect —
       no blueprints required. ${rpgLine ? esc(rpgLine) + '.' : ''}</p>
-    ${dateStr ? `<div class="meta">Taken ${esc(dateStr)}</div>` : ''}
+    ${dateStr ? `<div class="meta">Taken ${esc(dateStr)}${opts.id ? ' · snapshot ' + esc(opts.id) : ''}</div>` : ''}
   </div>
 
   <div class="stats">
@@ -213,10 +213,82 @@ a{color:var(--burrow);}
 
   <div class="footer">
     This is the front door. The full technical reports — structure scan, dependency graph,
-    timeline, and memory — live in <code>reports/</code> whenever you want to look under the hood.
-    Re-take this anytime with <code>PlaneKey: Snapshot Workspace</code>.
+    timeline, and memory — sit next to this file in this snapshot's folder.
+    Every snapshot is kept: this one never overwrote the last. Browse them all in
+    <code>../index.html</code>, or re-take with <code>PlaneKey: Snapshot Workspace</code>.
   </div>
 </div></body></html>`;
 }
 
-module.exports = { loadSnapshotData, buildSnapshotHtml, roleLabel };
+// A one-line summary of a snapshot, for the append-only ledger.
+function summarizeSnapshot(data) {
+  const rows = data.rows || [];
+  return {
+    files: rows.length,
+    connections: rows.reduce((a, r) => a + (r.routes || 0), 0),
+    trusted: (data.canon || []).length,
+    review: (data.residue || []).length,
+    modules: data.rpgCounts ? data.rpgCounts.modules : null,
+    symbols: data.rpgCounts ? data.rpgCounts.symbols : null
+  };
+}
+
+// The history page: every snapshot ever taken, newest first, nothing dropped.
+// It's a derived listing of the append-only ledger (snapshots/index.json) —
+// regenerating it loses no history because the ledger is the record.
+function buildHistoryHtml(ledger, opts = {}) {
+  const title = opts.title || 'this workspace';
+  const entries = (Array.isArray(ledger) ? ledger : []).slice().sort(
+    (a, b) => String(b.taken_at || b.id).localeCompare(String(a.taken_at || a.id))
+  );
+  const rowsHtml = entries.map((e, i) => {
+    const when = String(e.taken_at || e.id).replace('T', ' ').replace(/-(\d\d)-(\d\d)-(\d\d\d)Z$/, ':$1:$2').slice(0, 19);
+    const badge = i === 0 ? '<span class="chip is-warren">latest</span>' : '';
+    return `<li>
+      <a class="row-main" href="${esc(e.path || (e.id + '/snapshot.html'))}">
+        <span class="path">${esc(when)} UTC ${badge}</span>
+        <span class="score">${esc(e.files)} files · ${esc(e.connections)} connections</span>
+      </a>
+      <div class="sub">${e.symbols != null ? esc(e.symbols) + ' symbols · ' : ''}${esc(e.trusted)} trusted · ${esc(e.review)} to review · <code>${esc(e.id)}</code></div>
+    </li>`;
+  }).join('') || '<li class="empty">No snapshots recorded yet.</li>';
+
+  return /* html */`<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PlaneKey snapshot history — ${esc(title)}</title>
+<style>
+:root{--bg:#0A0C10;--panel:#11141A;--panel-2:#161A22;--line:#1E2330;--line-2:#2A3142;
+--ink:#E8ECF2;--ink-dim:#8E97A4;--ink-mute:#5C6573;--burrow:#7CA7FF;--warren:#6FD49A;
+--sans:'IBM Plex Sans',ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+--mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.55;
+-webkit-font-smoothing:antialiased;padding:32px 20px 48px;min-height:100vh;}
+.wrap{max-width:760px;margin:0 auto;}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--warren);}
+h1{font-size:24px;font-weight:700;letter-spacing:-.02em;margin:6px 0 4px;}
+.lede{color:var(--ink-dim);font-size:14px;max-width:60ch;margin-bottom:22px;}
+section{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:6px 18px;}
+ul{list-style:none;}
+li{padding:13px 0;border-top:1px solid var(--line);}
+li:first-child{border-top:none;}
+.row-main{display:flex;align-items:center;justify-content:space-between;gap:12px;text-decoration:none;color:inherit;}
+.row-main:hover .path{color:var(--burrow);}
+.path{font-family:var(--mono);font-size:13px;}
+.score{font-family:var(--mono);font-size:12px;color:var(--warren);white-space:nowrap;}
+.sub{font-size:11.5px;color:var(--ink-mute);margin-top:3px;}
+.sub code{color:var(--ink-dim);}
+.chip{font-family:var(--mono);font-size:10px;color:var(--warren);border:1px solid rgba(111,212,154,.3);
+background:rgba(111,212,154,.08);border-radius:100px;padding:1px 7px;margin-left:6px;}
+</style></head>
+<body><div class="wrap">
+  <div class="eyebrow">PlaneKey snapshot history</div>
+  <h1>${esc(title)}</h1>
+  <p class="lede">Every snapshot ever taken, newest first. Snapshots are immutable — a new one
+    is added, the old ones are never overwritten — so this is an accurate record over time.</p>
+  <section><ul>${rowsHtml}</ul></section>
+</div></body></html>`;
+}
+
+module.exports = { loadSnapshotData, buildSnapshotHtml, summarizeSnapshot, buildHistoryHtml, roleLabel };

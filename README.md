@@ -105,6 +105,13 @@ Inside the editor, generate the whole suite in one step with
 report from the sidebar: **Run Rgano Structure Scan**, **Build TMrFS
 Memory**, **Build Repo DB**.
 
+Each snapshot is written to its own timestamped folder under
+`reports/snapshots/<id>/` and **never overwrites the last one** — snapshots
+accumulate into a real history (`reports/snapshots/index.json` is the
+append-only ledger; `index.html` lists every one). That history is the point
+of a memory tool: you can watch the codebase change over time, not just see
+its latest state.
+
 ## Configure
 
 Open settings and search for `PlaneKey`, or use the Command Palette:
