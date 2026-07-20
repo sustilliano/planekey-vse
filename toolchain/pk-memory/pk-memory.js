@@ -249,6 +249,34 @@ function extractStructure(rel,text){
     const method = m[1] === 'route' ? 'GET' : m[1].toUpperCase();
     add(out.routes, `${method} ${m[2]}`);
   }
+  // ── Dispatch routes beyond HTTP ────────────────────────────────────────────
+  // "Routes" are the named hand-off points between functions, tools and
+  // programs — the interconnectivity RootRabbit:Rgano gauges in ANY codebase,
+  // not just web servers. An IDE extension, a CLI, or an MCP server routes via
+  // commands and events, so we capture those too:
+  //   CMD  <id>  — a command/tool this file PROVIDES (registers/handles)
+  //   CALL <id>  — a command/tool this file INVOKES (an outbound edge)
+  //   EVT  <name> — a pub/sub or IPC channel this file wires
+  const cmdRegRx=/\bregister(?:TextEditor|Webview\w*)?Command\s*\(\s*['"`]([^'"`\n]+)['"`]/g;
+  while((m=cmdRegRx.exec(text))){ if(anchorIsCode(m.index)) add(out.routes, `CMD ${m[1]}`); }
+  const cmdCallRx=/\bexecuteCommand\s*\(\s*['"`]([^'"`\n]+)['"`]/g;
+  while((m=cmdCallRx.exec(text))){ if(anchorIsCode(m.index)) add(out.routes, `CALL ${m[1]}`); }
+  // Registered tools (MCP servers, tool frameworks): registerTool("name", ...),
+  // add_tool("name"), @tool("name"), tool(name="...").
+  const toolRegRx=/\b(?:registerTool|add_tool|tool)\s*\(\s*(?:name\s*=\s*)?['"]([A-Za-z_][\w.:-]{1,80})['"]/g;
+  while((m=toolRegRx.exec(text))){ if(anchorIsCode(m.index)) add(out.routes, `TOOL ${m[1]}`); }
+  // Pub/sub + IPC channels: emitter.on('name'/.emit('name', socket.on('name',
+  // and webview/worker postMessage({ type: 'name' }). Kept to quoted channel
+  // names so it stays a real interconnection signal, not noise. Generic Node
+  // stream/process lifecycle events carry no interconnectivity meaning (every
+  // stream emits 'data'/'error'), so they're filtered out.
+  const EVT_NOISE = new Set(['data','error','end','close','finish','drain','readable',
+    'pause','resume','exit','beforeExit','SIGINT','SIGTERM','SIGHUP','SIGQUIT',
+    'uncaughtException','unhandledRejection','warning','abort','timeout']);
+  const evtRx=/\.(?:on|once|emit|addListener|subscribe)\s*\(\s*['"]([A-Za-z_][\w.:-]{1,60})['"]/g;
+  while((m=evtRx.exec(text))){ if(anchorIsCode(m.index) && !EVT_NOISE.has(m[1])) add(out.routes, `EVT ${m[1]}`); }
+  const msgTypeRx=/postMessage\s*\(\s*\{[^}]*?\btype\s*:\s*['"]([A-Za-z_][\w.:-]{1,60})['"]/g;
+  while((m=msgTypeRx.exec(text))){ if(anchorIsCode(m.index)) add(out.routes, `MSG ${m[1]}`); }
   const fnRx=/\b(?:async\s+)?function\s+([A-Za-z_$][\w$]*)\s*\(|\bconst\s+([A-Za-z_$][\w$]*)\s*=\s*(?:async\s*)?\([^)]*\)\s*=>/g;
   while((m=fnRx.exec(text))) add(out.functions,m[1]||m[2]);
   const idRx=/\bid\s*=\s*['"]([^'"]+)['"]/g;
@@ -258,7 +286,14 @@ function extractStructure(rel,text){
   const scriptRx=/<script\b[^>]*src\s*=\s*['"]([^'"]+)['"]/gi;
   while((m=scriptRx.exec(text))) add(out.scripts,m[1]);
   if(path.basename(rel).toLowerCase()==='package.json'){
-    try{ const j=JSON.parse(text); out.package_scripts=j.scripts || {}; out.config_keys=Object.keys(j).sort(); } catch {}
+    try{
+      const j=JSON.parse(text); out.package_scripts=j.scripts || {}; out.config_keys=Object.keys(j).sort();
+      // A VS Code manifest declares command routes it wires into the editor —
+      // the dispatch surface that makes the extension interconnected.
+      const contribCmds = j.contributes && j.contributes.commands;
+      if(Array.isArray(contribCmds)) for(const c of contribCmds){ if(c && c.command) add(out.routes, `CMD ${c.command}`); }
+      if(Array.isArray(j.activationEvents)) for(const e of j.activationEvents){ const mm=/^onCommand:(.+)$/.exec(String(e)); if(mm) add(out.routes, `CMD ${mm[1]}`); }
+    } catch {}
   } else if(path.extname(rel).toLowerCase()==='.json'){
     try{ const j=JSON.parse(text); if(j && typeof j==='object' && !Array.isArray(j)) out.config_keys=Object.keys(j).sort(); } catch {}
   }

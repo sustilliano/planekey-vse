@@ -25,17 +25,26 @@
   software is proprietary, governed by `LICENSE-PROPRIETARY` — not
   public-domain.
 
-- **Fix phantom route counts in Rgano/TMrFS reports.** `pk-memory`'s
-  structure extractor scanned raw text, so it counted example routes that
-  live inside comments and ```` ``` ```` documentation fences (e.g.
-  `pk-memory.js` reported `routes=2` from its own regex docs;
-  `planekey-init.ts` reported `routes=2` from doc examples). Route
-  detection is now code-aware via a line-oriented `computeCodeMask` — a
-  route only counts when its anchor token (`app`/`router`/`@`/`#`) is real
-  code, not a comment or fenced example. Real Express/Flask/FastAPI/Actix
-  routes still detect correctly; the previously-phantom counts are now a
-  truthful `0` for this repo (a VS Code extension + CLIs with no HTTP
-  server). Also constrained the JS route path to a single line.
+- **Routes now measure interconnectivity, not just HTTP — and stop
+  hallucinating.** Two problems in `pk-memory`'s structure extractor:
+  1. *Too narrow.* "Routes" only matched web-framework endpoints
+     (`app.get`, `@app.route`, `#[get]`), so a VS Code extension / CLI /
+     MCP server — which route via **commands, tools, events and IPC**, not
+     HTTP — always scored `routes=0`, making the reports look broken even
+     though the repo is densely interconnected. RootRabbit:Rgano exists to
+     gauge how functions, tools and programs connect in *any* codebase, so
+     route detection now also captures: `CMD`/`CALL` (command registration
+     & invocation, incl. a VS Code manifest's `contributes.commands`),
+     `TOOL` (registered tools / MCP), `EVT` (pub/sub & IPC channels, with
+     generic stream/process lifecycle events filtered out), and `MSG`
+     (webview/worker `postMessage` types). `package.json` now reports its
+     44 command routes; `chatPanel.js` its webview IPC channels; etc.
+  2. *False positives.* It scanned raw text, counting example routes inside
+     comments and ```` ``` ```` doc fences (`pk-memory.js` "found" 2 in its
+     own regex docs). Detection is now code-aware via a line-oriented
+     `computeCodeMask`: a route only counts when its anchor token is real
+     code, not a comment or fenced example. Verified against
+     JS/Python/Rust fixtures. JS route path constrained to one line.
 
 - **New `PlaneKey: Snapshot Workspace (all reports)` command.** Runs the
   full report suite — Rgano structure scan, Repository Planning Graph,
