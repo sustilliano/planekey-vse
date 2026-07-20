@@ -14,6 +14,17 @@
   The panel is backed by the bundled pk-client and polls the warren inbox
   every 45s, badging unread count on the panel title.
 
+- Docs: rewrite README for the v0.4.0 "one download, three surfaces"
+  model — the pk-client / pk-memory / Env-Observer MCP toolchain is now
+  bundled under `toolchain/`, not a separate install. Adds a reproducible
+  RootRabbit:Rgano report example pointing at the `rgano-reports-demo`
+  branch, plus a License section.
+- License: `package.json` now declares
+  `SEE LICENSE IN LICENSE-PROPRIETARY` instead of `UNLICENSED`, so npm /
+  marketplace tooling stops reporting the extension as unlicensed. The
+  software is proprietary, governed by `LICENSE-PROPRIETARY` — not
+  public-domain.
+
 ## 0.2.1
 
 - Add five new commands that drive the pk-client v0.1.5.8 bridge-consumer
