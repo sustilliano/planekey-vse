@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PlaneKey snapshot — PlaneKey VSE</title>
+<style>
+:root{
+  --bg:#0A0C10; --panel:#11141A; --panel-2:#161A22; --line:#1E2330; --line-2:#2A3142;
+  --ink:#E8ECF2; --ink-2:#C5CCD7; --ink-dim:#8E97A4; --ink-mute:#5C6573;
+  --burrow:#7CA7FF; --warren:#6FD49A; --thump:#F0B14B;
+  --sans:'IBM Plex Sans',ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  background:
+    radial-gradient(900px 500px at 75% -10%, rgba(124,167,255,.06), transparent 60%),
+    radial-gradient(700px 420px at 5% 110%, rgba(111,212,154,.05), transparent 60%),
+    var(--bg);
+  color:var(--ink); font-family:var(--sans); line-height:1.55; -webkit-font-smoothing:antialiased;
+  padding:32px 20px 48px; min-height:100vh;
+}
+.wrap{max-width:860px;margin:0 auto;}
+.hero{margin-bottom:22px;}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--warren);}
+h1{font-size:26px;font-weight:700;letter-spacing:-.02em;margin:6px 0 4px;}
+h1 em{font-style:normal;color:var(--burrow);}
+.lede{color:var(--ink-dim);font-size:14.5px;max-width:60ch;}
+.meta{font-family:var(--mono);font-size:11.5px;color:var(--ink-mute);margin-top:8px;}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin:22px 0 26px;}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 14px;}
+.stat-n{font-size:28px;font-weight:700;letter-spacing:-.02em;}
+.stat-l{font-size:12px;color:var(--ink-dim);margin-top:2px;}
+.stat.warren .stat-n{color:var(--warren);}
+.stat.burrow .stat-n{color:var(--burrow);}
+.stat.thump .stat-n{color:var(--thump);}
+section{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 18px 8px;margin-bottom:16px;}
+.sec-head{display:flex;align-items:baseline;gap:10px;margin-bottom:6px;}
+.sec-head h2{font-size:15px;font-weight:600;}
+.sec-head p{font-size:12.5px;color:var(--ink-mute);}
+ul{list-style:none;}
+li{padding:11px 0;border-top:1px solid var(--line);}
+li:first-child{border-top:none;}
+.row-main{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.path{font-family:var(--mono);font-size:12.5px;color:var(--ink);overflow-wrap:anywhere;}
+.role{font-size:11px;color:var(--ink-mute);white-space:nowrap;}
+.score{font-family:var(--mono);font-size:12px;color:var(--warren);white-space:nowrap;}
+.sub{font-size:11.5px;color:var(--ink-mute);margin-top:2px;}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+.chip{font-family:var(--mono);font-size:10.5px;color:var(--ink-dim);background:var(--panel-2);
+  border:1px solid var(--line-2);border-radius:100px;padding:2px 9px;}
+.chip.is-warren{color:var(--warren);border-color:rgba(111,212,154,.3);background:rgba(111,212,154,.08);}
+.chip.is-thump{color:var(--thump);border-color:rgba(240,177,75,.3);background:rgba(240,177,75,.08);}
+.empty{color:var(--ink-mute);font-size:13px;}
+.footer{margin-top:24px;padding:16px 18px;border:1px dashed var(--line-2);border-radius:12px;color:var(--ink-dim);font-size:13px;}
+.footer code{font-family:var(--mono);font-size:12px;color:var(--ink-2);background:var(--panel-2);padding:2px 6px;border-radius:5px;}
+a{color:var(--burrow);}
+</style></head>
+<body><div class="wrap">
+  <div class="hero">
+    <div class="eyebrow">PlaneKey snapshot</div>
+    <h1>PlaneKey VSE</h1>
+    <p class="lede">A plain-language look at what's in this codebase and how its pieces connect —
+      no blueprints required. 10 modules · 524 functions &amp; symbols · 1615 links between them.</p>
+    <div class="meta">Taken 2026-07-20</div>
+  </div>
+
+  <div class="stats">
+    <div class="stat burrow"><div class="stat-n">36</div><div class="stat-l">files</div></div>
+    <div class="stat warren"><div class="stat-n">53</div><div class="stat-l">connections</div></div>
+    <div class="stat "><div class="stat-n">36</div><div class="stat-l">trusted pieces</div></div>
+    <div class="stat thump"><div class="stat-n">12</div><div class="stat-l">to review</div></div>
+  </div>
+
+  <section>
+    <div class="sec-head"><h2>What holds it together</h2><p>the most connected pieces</p></div>
+    <ul><li>
+      <div class="row-main"><span class="path">toolchain/pk-client/bin/pk-client.js</span><span class="role">Code</span></div>
+      <div class="chips"><span class="chip is-warren">1 connection</span><span class="chip">10 imports</span><span class="chip">273 fn</span></div>
+    </li><li>
+      <div class="row-main"><span class="path">package.json</span><span class="role">Manifest &amp; wiring</span></div>
+      <div class="chips"><span class="chip is-warren">39 connections</span></div>
+    </li><li>
+      <div class="row-main"><span class="path">toolchain/pk-memory/pk-memory.js</span><span class="role">Code</span></div>
+      <div class="chips"><span class="chip">6 imports</span><span class="chip">79 fn</span></div>
+    </li><li>
+      <div class="row-main"><span class="path">src/extension.js</span><span class="role">Code</span></div>
+      <div class="chips"><span class="chip is-warren">1 connection</span><span class="chip">6 imports</span><span class="chip">63 fn</span></div>
+    </li><li>
+      <div class="row-main"><span class="path">docs/predictive-typing-alt/extension.ts</span><span class="role">Code</span></div>
+      <div class="chips"><span class="chip is-warren">5 connections</span><span class="chip">7 imports</span><span class="chip">2 fn</span></div>
+    </li><li>
+      <div class="row-main"><span class="path">src/planekey-integration-glue.ts</span><span class="role">PlaneKey piece</span></div>
+      <div class="chips"><span class="chip is-warren">2 connections</span><span class="chip">5 imports</span><span class="chip">11 fn</span></div>
+    </li></ul>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>The trusted core</h2><p>what looks like source-of-truth</p></div>
+    <ul><li>
+      <div class="row-main"><span class="path">src/planekey-integration-glue.ts</span>
+        <span class="score">80%</span></div>
+      <div class="sub">PlaneKey piece</div>
+    </li><li>
+      <div class="row-main"><span class="path">docs/predictive-typing-alt/package.json</span>
+        <span class="score">80%</span></div>
+      <div class="sub">Manifest &amp; wiring</div>
+    </li><li>
+      <div class="row-main"><span class="path">package.json</span>
+        <span class="score">80%</span></div>
+      <div class="sub">Manifest &amp; wiring</div>
+    </li><li>
+      <div class="row-main"><span class="path">src/planekey-vcs-integration.ts</span>
+        <span class="score">70%</span></div>
+      <div class="sub">PlaneKey piece</div>
+    </li><li>
+      <div class="row-main"><span class="path">src/planekey-multi-project.ts</span>
+        <span class="score">70%</span></div>
+      <div class="sub">PlaneKey piece</div>
+    </li><li>
+      <div class="row-main"><span class="path">src/planekey-vcs-hooks.ts</span>
+        <span class="score">70%</span></div>
+      <div class="sub">PlaneKey piece</div>
+    </li></ul>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Worth a look</h2><p>flagged for a human's eye — not necessarily wrong</p></div>
+    <ul><li>
+      <div class="row-main"><span class="path">toolchain/pk-client/bin/pk-client.js</span>
+        <span class="role">Code</span></div>
+      <div class="chips"><span class="chip is-thump">agent runtime residue</span><span class="chip is-thump">tracking or analytics surface</span><span class="chip is-thump">email capture surface</span></div>
+    </li><li>
+      <div class="row-main"><span class="path">toolchain/pk-memory/pk-memory.js</span>
+        <span class="role">Code</span></div>
+      <div class="chips"><span class="chip is-thump">agent runtime residue</span><span class="chip is-thump">tracking or analytics surface</span><span class="chip is-thump">email capture surface</span></div>
+    </li><li>
+      <div class="row-main"><span class="path">toolchain/mcp/claude_desktop_config.example.json</span>
+        <span class="role">Agent runtime</span></div>
+      <div class="chips"><span class="chip is-thump">agent runtime residue</span></div>
+    </li><li>
+      <div class="row-main"><span class="path">toolchain/mcp/cursor_mcp_config.example.json</span>
+        <span class="role">Agent runtime</span></div>
+      <div class="chips"><span class="chip is-thump">agent runtime residue</span></div>
+    </li><li>
+      <div class="row-main"><span class="path">toolchain/mcp/planekey_env_observer_server.py</span>
+        <span class="role">Agent runtime</span></div>
+      <div class="chips"><span class="chip is-thump">agent runtime residue</span></div>
+    </li><li>
+      <div class="row-main"><span class="path">toolchain/mcp/requirements.txt</span>
+        <span class="role">Agent runtime</span></div>
+      <div class="chips"><span class="chip is-thump">agent runtime residue</span></div>
+    </li></ul>
+  </section>
+
+  <div class="footer">
+    This is the front door. The full technical reports — structure scan, dependency graph,
+    timeline, and memory — live in <code>reports/</code> whenever you want to look under the hood.
+    Re-take this anytime with <code>PlaneKey: Snapshot Workspace</code>.
+  </div>
+</div></body></html>
