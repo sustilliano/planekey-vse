@@ -125,6 +125,7 @@ function activate(context) {
     ['planekey.indexCodebase', indexCodebase],
     ['planekey.buildDB', buildDB],
     ['planekey.snapshotWorkspace', snapshotWorkspace],
+    ['planekey.checkVersion', checkVersionIntegrity],
     ['planekey.refreshCache', refreshPredictiveCache],
     ['planekey.showMemoryStats', showMemoryStats],
     ['planekey.togglePredictive', togglePredictive]
@@ -377,6 +378,13 @@ async function snapshotWorkspace(options = {}) {
   const title = path.basename(root) || 'workspace';
   try {
     const { loadSnapshotData, buildSnapshotHtml, summarizeSnapshot, buildHistoryHtml } = require('./panels/snapshotCard');
+    // Version integrity is a checker like residue/canon — run it and record it
+    // in the snapshot so the standard is enforced, not just documented.
+    try {
+      const vi = require('./checks/versionIntegrity').checkVersionIntegrity(root);
+      fs.writeFileSync(path.join(snapDir, 'VERSION_INTEGRITY.json'), JSON.stringify(vi, null, 2) + '\n');
+      if (!vi.ok) appendLog(`[Snapshot] version integrity: ${vi.warnings} warning(s) — run PlaneKey: Check Version Integrity.`);
+    } catch (e) { appendLog('[Snapshot] version check skipped: ' + e.message); }
     const data = loadSnapshotData(snapDir, {});
     cardHtml = buildSnapshotHtml(data, { title, id, takenAt: takenAt.toISOString() });
     fs.writeFileSync(path.join(snapDir, 'snapshot.html'), cardHtml);
@@ -407,6 +415,28 @@ async function snapshotWorkspace(options = {}) {
   if (pick === 'Open Snapshot') showSnapshotCard(cardHtml);
   else if (pick === 'History') openSnapshotHistory(reportRoot);
   else if (pick === 'Open Folder') openReports();
+}
+
+async function checkVersionIntegrity() {
+  let result;
+  try { result = require('./checks/versionIntegrity').checkVersionIntegrity(getProjectRoot()); }
+  catch (e) { vscode.window.showWarningMessage('PlaneKey: version check failed — ' + e.message); return; }
+  appendLog('\n[Version integrity] ' + (result.version || 'no version'));
+  for (const f of result.findings) appendLog(`  [${f.level}] ${f.message}`);
+  const warns = result.findings.filter(f => f.level === 'warn');
+  if (result.ok) {
+    vscode.window.showInformationMessage(`PlaneKey: version ${result.version} is consistent (changelog + tags).`);
+  } else {
+    const pick = await vscode.window.showWarningMessage(
+      `PlaneKey: version integrity — ${warns.length} to reconcile: ${warns[0] && warns[0].message}`,
+      'Show Details', 'Versioning Standard'
+    );
+    if (pick === 'Show Details') output.show(true);
+    else if (pick === 'Versioning Standard') {
+      const uri = vscode.Uri.file(path.join(extensionRoot, 'docs', 'VERSIONING.md'));
+      vscode.commands.executeCommand('markdown.showPreview', uri).then(undefined, () => vscode.window.showTextDocument(uri));
+    }
+  }
 }
 
 function openSnapshotHistory(reportRoot) {
@@ -979,6 +1009,7 @@ class ActionProvider {
       commandItem('Open Chat', 'planekey.openChat', 'comment-discussion'),
       commandItem('Open Inbox', 'planekey.openInbox', 'inbox'),
       commandItem('Snapshot Workspace (all reports)', 'planekey.snapshotWorkspace', 'device-camera'),
+      commandItem('Check Version Integrity', 'planekey.checkVersion', 'versions'),
       commandItem('Refresh Trust Status', 'planekey.refreshStatus', 'refresh'),
       commandItem('Open pk-client Terminal', 'planekey.openPkClientTerminal', 'terminal'),
       commandItem('── Predictive Typing ──', '', 'symbol-keyword'),

@@ -57,9 +57,12 @@ function loadSnapshotData(reportRoot, names = {}) {
     if (m) rpgCounts = { modules: +m[1], symbols: +m[2], dependencies: +m[3], capabilities: +m[4] };
   } catch (_) { /* optional */ }
 
+  // Version-integrity check (written alongside the reports by the snapshot).
+  const versionIntegrity = readJson(path.join(reportRoot, 'VERSION_INTEGRITY.json'));
+
   return {
     generatedAt: (structure && structure.generated_at) || new Date().toISOString(),
-    rows, canon, residue, rpgCounts
+    rows, canon, residue, rpgCounts, versionIntegrity
   };
 }
 
@@ -122,6 +125,21 @@ function buildSnapshotHtml(data, opts = {}) {
   const rpgLine = rpg
     ? `${rpg.modules} modules · ${rpg.symbols} functions & symbols · ${rpg.dependencies} links between them`
     : '';
+
+  // Version & governance — the version-integrity check, surfaced like any
+  // other checker (residue/canon/secrets).
+  const vi = data.versionIntegrity;
+  const viTone = (l) => l === 'warn' ? 'is-thump' : l === 'ok' ? 'is-warren' : '';
+  const viHtml = vi ? `
+  <section>
+    <div class="sec-head"><h2>Version &amp; governance</h2>
+      <p>${vi.ok ? 'version tag agrees with the record' : vi.warnings + ' thing' + (vi.warnings === 1 ? '' : 's') + ' to reconcile'}</p></div>
+    <ul>
+      <li><div class="row-main"><span class="path">version ${esc(vi.version || '—')}</span>
+        <span class="score" style="color:${vi.ok ? 'var(--warren)' : 'var(--thump)'}">${vi.ok ? 'consistent' : 'check'}</span></div></li>
+      ${(vi.findings || []).map(f => `<li><div class="chips"><span class="chip ${viTone(f.level)}">${esc(f.message)}</span></div></li>`).join('')}
+    </ul>
+  </section>` : '';
 
   return /* html */`<!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8">
@@ -210,7 +228,7 @@ a{color:var(--burrow);}
     <div class="sec-head"><h2>Worth a look</h2><p>flagged for a human's eye — not necessarily wrong</p></div>
     <ul>${residueRows}</ul>
   </section>
-
+${viHtml}
   <div class="footer">
     This is the front door. The full technical reports — structure scan, dependency graph,
     timeline, and memory — sit next to this file in this snapshot's folder.

@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.8.0
+
+- **Version integrity is now a check in the snapshot system** — the same
+  "scan and flag" shape as residue / canon / secrets / license, enforcing
+  `docs/VERSIONING.md` instead of just documenting it.
+  `src/checks/versionIntegrity.js` verifies the declared version against the
+  changelog, the git tags, and the size of the change:
+  - flags `package.json` ↔ top `CHANGELOG` heading mismatch, missing or
+    duplicate headings, non-SemVer headings, and a version behind its tag;
+  - reads Conventional Commits since the last tag and flags an **under-bump**
+    — e.g. features shipped as a patch (the exact `0.4.2→0.4.7` mistake);
+  - runs on every `Snapshot Workspace` (writes `VERSION_INTEGRITY.json`,
+    shown in a "Version & governance" section on the snapshot page) and on
+    demand via **`PlaneKey: Check Version Integrity`** (Command Palette +
+    Actions list).
+
 ## 0.7.1
 
 - Add the PlaneKey versioning standard, `docs/VERSIONING.md` (referenced from
