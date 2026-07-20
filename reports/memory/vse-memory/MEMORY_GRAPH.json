@@ -161,10 +161,10 @@
       "role": "code_module",
       "layer": "unknown",
       "status": "candidate",
-      "canon_score": 0.5,
+      "canon_score": 0.6,
       "residue_score": 0,
       "risk_score": 0,
-      "signature": "c710b6648354a6f4"
+      "signature": "d28e7a7f08ee0425"
     },
     {
       "id": "tmrfs:file:cde0e735b7532d58:15",
@@ -172,10 +172,10 @@
       "role": "package_manifest",
       "layer": "unknown",
       "status": "candidate",
-      "canon_score": 0.7,
+      "canon_score": 0.8,
       "residue_score": 0,
       "risk_score": 0,
-      "signature": "8f5de03da451a608"
+      "signature": "5a58f0760c535cd2"
     },
     {
       "id": "tmrfs:file:bbc0cc5e4d6239f2:16",
@@ -194,10 +194,10 @@
       "role": "package_manifest",
       "layer": "unknown",
       "status": "candidate",
-      "canon_score": 0.7,
+      "canon_score": 0.8,
       "residue_score": 0.15,
       "risk_score": 10,
-      "signature": "8235e0ad8aeaf3e3"
+      "signature": "4cfdbc35350edeee"
     },
     {
       "id": "tmrfs:file:3059cd73b3786d31:18",
@@ -211,95 +211,29 @@
       "signature": "638cfeed54ed9deb"
     },
     {
-      "id": "tmrfs:file:1dc2720d921160b4:19",
-      "path": "reports/rgano/vse-rgano/RGANO_STRUCTURE_SCAN.json",
-      "role": "rgano_component",
-      "layer": "unknown",
-      "status": "review",
-      "canon_score": 0.5,
-      "residue_score": 0.45,
-      "risk_score": 50,
-      "signature": "a3f779cd0d90c41d"
-    },
-    {
-      "id": "tmrfs:file:8cbc5ef5d60f4285:20",
-      "path": "reports/rgano/vse-rgano/RGANO_STRUCTURE_SCAN.md",
-      "role": "rgano_component",
-      "layer": "unknown",
-      "status": "candidate",
-      "canon_score": 0.5,
-      "residue_score": 0.15,
-      "risk_score": 10,
-      "signature": "4246677e3ee13fce"
-    },
-    {
-      "id": "tmrfs:file:0ca3a008359e3820:21",
-      "path": "reports/rpg/vse-rpg/rpg.md",
-      "role": "documentation",
-      "layer": "unknown",
-      "status": "candidate",
-      "canon_score": 0.5,
-      "residue_score": 0,
-      "risk_score": 0,
-      "signature": "981c3c942944ba4a"
-    },
-    {
-      "id": "tmrfs:file:b38af3023b93db34:22",
-      "path": "reports/rpg/vse-rpg/rpg.sql",
-      "role": "artifact",
-      "layer": "unknown",
-      "status": "candidate",
-      "canon_score": 0.5,
-      "residue_score": 0.15,
-      "risk_score": 10,
-      "signature": "80a3fc5585c96fbe"
-    },
-    {
-      "id": "tmrfs:file:0d7a41bfce1c4e5b:23",
-      "path": "reports/timeline/vse-timeline/pk-timeline.md",
-      "role": "documentation",
-      "layer": "unknown",
-      "status": "candidate",
-      "canon_score": 0.5,
-      "residue_score": 0,
-      "risk_score": 0,
-      "signature": "e56f761d26c7b734"
-    },
-    {
-      "id": "tmrfs:file:89f267a4565bff69:24",
-      "path": "reports/timeline/vse-timeline/pk-timeline.sql",
-      "role": "artifact",
-      "layer": "unknown",
-      "status": "review",
-      "canon_score": 0.5,
-      "residue_score": 0.45,
-      "risk_score": 50,
-      "signature": "44af70bd679a71b3"
-    },
-    {
-      "id": "tmrfs:file:f1d09b3151437b1d:25",
+      "id": "tmrfs:file:f1d09b3151437b1d:19",
       "path": "src/extension.js",
       "role": "code_module",
       "layer": "unknown",
       "status": "candidate",
-      "canon_score": 0.5,
+      "canon_score": 0.6,
       "residue_score": 0.15,
       "risk_score": 10,
-      "signature": "abfaebd58ec1d806"
+      "signature": "50554e15b64659f3"
     },
     {
-      "id": "tmrfs:file:b9e35f38508ae942:26",
+      "id": "tmrfs:file:b9e35f38508ae942:20",
       "path": "src/planekey-init.ts",
       "role": "planekey_component",
       "layer": "unknown",
       "status": "candidate",
-      "canon_score": 0.8,
+      "canon_score": 0.7,
       "residue_score": 0.15,
       "risk_score": 20,
-      "signature": "e7d3e8e43eda3838"
+      "signature": "1cc2fd4e2982e389"
     },
     {
-      "id": "tmrfs:file:4993cd2e27eda6ba:27",
+      "id": "tmrfs:file:4993cd2e27eda6ba:21",
       "path": "src/planekey-integration-glue.ts",
       "role": "planekey_component",
       "layer": "unknown",
@@ -307,10 +241,10 @@
       "canon_score": 0.8,
       "residue_score": 0,
       "risk_score": 0,
-      "signature": "13ba31c9921813a2"
+      "signature": "5cf3f132665de3e6"
     },
     {
-      "id": "tmrfs:file:d85b7625b8e2a74b:28",
+      "id": "tmrfs:file:d85b7625b8e2a74b:22",
       "path": "src/planekey-licensing-compliance.ts",
       "role": "planekey_component",
       "layer": "unknown",
@@ -321,7 +255,7 @@
       "signature": "78864109b6bd1a14"
     },
     {
-      "id": "tmrfs:file:3f16ec5490019f78:29",
+      "id": "tmrfs:file:3f16ec5490019f78:23",
       "path": "src/planekey-multi-project.ts",
       "role": "planekey_component",
       "layer": "unknown",
@@ -332,7 +266,7 @@
       "signature": "5ad24c295e8e1473"
     },
     {
-      "id": "tmrfs:file:502979a18f0b38fb:30",
+      "id": "tmrfs:file:502979a18f0b38fb:24",
       "path": "src/planekey-vcs-hooks.ts",
       "role": "planekey_component",
       "layer": "unknown",
@@ -343,7 +277,7 @@
       "signature": "970fdc81780db15b"
     },
     {
-      "id": "tmrfs:file:bc9dc5f405bd7e38:31",
+      "id": "tmrfs:file:bc9dc5f405bd7e38:25",
       "path": "src/planekey-vcs-integration.ts",
       "role": "planekey_component",
       "layer": "unknown",
@@ -354,7 +288,7 @@
       "signature": "e00092e259793194"
     },
     {
-      "id": "tmrfs:file:1899772150fcae66:32",
+      "id": "tmrfs:file:1899772150fcae66:26",
       "path": "src/providers/predictiveTypingProvider.js",
       "role": "code_module",
       "layer": "unknown",
@@ -365,7 +299,7 @@
       "signature": "3f78d6e3c7d88e2d"
     },
     {
-      "id": "tmrfs:file:b4cd7560b0c76cbb:33",
+      "id": "tmrfs:file:b4cd7560b0c76cbb:27",
       "path": "toolchain/mcp/claude_desktop_config.example.json",
       "role": "agent_runtime",
       "layer": "unknown",
@@ -376,7 +310,7 @@
       "signature": "dac852427673ddb6"
     },
     {
-      "id": "tmrfs:file:dc7fd83c77574c59:34",
+      "id": "tmrfs:file:dc7fd83c77574c59:28",
       "path": "toolchain/mcp/cursor_mcp_config.example.json",
       "role": "agent_runtime",
       "layer": "unknown",
@@ -387,7 +321,7 @@
       "signature": "1aae9fb99edae827"
     },
     {
-      "id": "tmrfs:file:228f865917c1b2b6:35",
+      "id": "tmrfs:file:228f865917c1b2b6:29",
       "path": "toolchain/mcp/planekey_env_observer_server.py",
       "role": "agent_runtime",
       "layer": "unknown",
@@ -398,7 +332,7 @@
       "signature": "bfcb1614c03cbd5c"
     },
     {
-      "id": "tmrfs:file:5fdd77b2b527897c:36",
+      "id": "tmrfs:file:5fdd77b2b527897c:30",
       "path": "toolchain/mcp/requirements.txt",
       "role": "agent_runtime",
       "layer": "unknown",
@@ -409,18 +343,18 @@
       "signature": "3d97188adf03bc6f"
     },
     {
-      "id": "tmrfs:file:79e8d585fda5c54f:37",
+      "id": "tmrfs:file:79e8d585fda5c54f:31",
       "path": "toolchain/pk-client/bin/pk-client.js",
       "role": "code_module",
       "layer": "unknown",
       "status": "block",
-      "canon_score": 0.5,
+      "canon_score": 0.6,
       "residue_score": 0.6,
       "risk_score": 90,
-      "signature": "0b28385bd5fa4c38"
+      "signature": "29a2d71ec58e1849"
     },
     {
-      "id": "tmrfs:file:043e82c453d33898:38",
+      "id": "tmrfs:file:043e82c453d33898:32",
       "path": "toolchain/pk-client/lib/detect.js",
       "role": "code_module",
       "layer": "unknown",
@@ -431,7 +365,7 @@
       "signature": "3a80d2051e2209c1"
     },
     {
-      "id": "tmrfs:file:3cbd17ebad965913:39",
+      "id": "tmrfs:file:3cbd17ebad965913:33",
       "path": "toolchain/pk-client/lib/mmx.js",
       "role": "code_module",
       "layer": "unknown",
@@ -442,7 +376,7 @@
       "signature": "ddce530ca85e46a9"
     },
     {
-      "id": "tmrfs:file:135653f504eae9c4:40",
+      "id": "tmrfs:file:135653f504eae9c4:34",
       "path": "toolchain/pk-client/lib/schema.js",
       "role": "code_module",
       "layer": "unknown",
@@ -453,15 +387,15 @@
       "signature": "e98ef34bca9f9c7b"
     },
     {
-      "id": "tmrfs:file:356a04c16cf675eb:41",
+      "id": "tmrfs:file:3319227d091adab3:35",
       "path": "toolchain/pk-memory/pk-memory.js",
       "role": "code_module",
       "layer": "unknown",
       "status": "block",
-      "canon_score": 0.6,
+      "canon_score": 0.5,
       "residue_score": 0.6,
       "risk_score": 90,
-      "signature": "d81104beabb2c33f"
+      "signature": "833f30707f1400bb"
     }
   ],
   "edges": [

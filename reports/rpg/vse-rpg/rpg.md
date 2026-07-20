@@ -1,7 +1,7 @@
 # PlaneKey Repository Planning Graph (RPG)
 
-Generated: 2026-07-20T05:28:52.497Z
-Modules: 10  Symbols: 522  Dependencies: 1609  Capabilities: 5
+Generated: 2026-07-20T05:56:39.275Z
+Modules: 10  Symbols: 524  Dependencies: 1615  Capabilities: 5
 
 ## Capabilities
 
@@ -24,7 +24,7 @@ Modules: toolchain
 
 | Module | Symbols |
 |---|---|
-| toolchain | 383 |
+| toolchain | 385 |
 | extension | 65 |
 | planekey-init | 14 |
 | planekey-multi-project | 14 |

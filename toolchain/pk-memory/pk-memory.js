@@ -188,24 +188,95 @@ function residueSignals(rel,text){
   return Array.from(new Set(signals));
 }
 
+// Marks which characters are real CODE (1) vs inside a comment, a fenced
+// documentation block, or a string/template literal (0). Route/pattern
+// extractors consult this so they stop hallucinating routes from examples
+// that live in comments or docs — the #1 source of phantom route counts
+// (a tool that documents `app.get('/x')` in a comment was "finding" it).
+//
+// Deliberately line-oriented so a stray regex literal (common in this very
+// file) can only desync one line, never the whole scan. Cross-line state is
+// tracked only for /* */ block comments and ``` fenced blocks.
+function computeCodeMask(text, ext){
+  const n = text.length;
+  const mask = new Uint8Array(n); // 0 = non-code by default; 1 = code
+  const hashComment = ext === '.py' || ext === '.rb' || ext === '.sh' ||
+                      ext === '.yml' || ext === '.yaml' || ext === '.toml';
+  let pos = 0, inBlock = false, inFence = false;
+  const lines = text.split('\n');
+  for(const line of lines){
+    // A ``` fence line (optionally escaped as \`\`\` inside a template
+    // literal, optionally with a language tag) toggles doc-example mode.
+    if(/^\s*\\*`\\*`\\*`/.test(line)){ inFence = !inFence; pos += line.length + 1; continue; }
+    if(inFence){ pos += line.length + 1; continue; }
+    let j = 0, str = null;
+    while(j < line.length){
+      const c = line[j], c2 = line[j + 1];
+      if(inBlock){ if(c === '*' && c2 === '/'){ inBlock = false; j += 2; continue; } j++; continue; }
+      if(str){ if(c === '\\'){ j += 2; continue; } if(c === str){ str = null; j++; continue; } j++; continue; }
+      if(c === '/' && c2 === '/') break;                 // line comment → rest non-code
+      if(hashComment && c === '#') break;                // Python/shell comment
+      if(c === '/' && c2 === '*'){ inBlock = true; j += 2; continue; }
+      if(c === "'" || c === '"' || c === '`'){ str = c; j++; continue; }
+      mask[pos + j] = 1;                                 // ordinary code char
+      j++;
+    }
+    pos += line.length + 1; // account for the '\n' removed by split
+  }
+  return mask;
+}
+
 function extractStructure(rel,text){
   const out={imports:[],routes:[],functions:[],html_ids:[],forms:[],scripts:[],package_scripts:{},config_keys:[]};
   if(!text) return out;
   const add=(arr,v)=>{ if(v && !arr.includes(v)) arr.push(v); };
   let m;
+  // Only accept a route whose ANCHOR token (app/router/@/#) is real code, not
+  // an example inside a comment or a ``` doc fence. See computeCodeMask.
+  const codeMask = computeCodeMask(text, path.extname(rel).toLowerCase());
+  const anchorIsCode = (idx) => codeMask[idx] === 1;
   const importRx=/\b(?:require\(['"]([^'"]+)['"]\)|import\s+(?:[^'";]+\s+from\s+)?['"]([^'"]+)['"])/g;
   while((m=importRx.exec(text))) add(out.imports,m[1]||m[2]);
-  const routeRx=/\b(?:app|router)\.(get|post|put|patch|delete|use)\s*\(\s*['"`]([^'"`]+)['"`]/g;
-  while((m=routeRx.exec(text))) add(out.routes, `${m[1].toUpperCase()} ${m[2]}`);
+  const routeRx=/\b(?:app|router)\.(get|post|put|patch|delete|use)\s*\(\s*['"`]([^'"`\n]+)['"`]/g;
+  while((m=routeRx.exec(text))){ if(anchorIsCode(m.index)) add(out.routes, `${m[1].toUpperCase()} ${m[2]}`); }
   // Rust / Actix attribute macros: #[get("/path")], #[post("/path")], etc.
   const rustRouteRx=/#\[\s*(get|post|put|patch|delete)\s*\(\s*"([^"]+)"\s*\)\s*\]/g;
-  while((m=rustRouteRx.exec(text))) add(out.routes, `${m[1].toUpperCase()} ${m[2]}`);
+  while((m=rustRouteRx.exec(text))){ if(anchorIsCode(m.index)) add(out.routes, `${m[1].toUpperCase()} ${m[2]}`); }
   // Python / Flask / FastAPI / Quart: @app.route("/path"), @router.get("/path"), etc.
   const pyRouteRx=/@(?:app|bp|router|api|blueprint)\.(route|get|post|put|patch|delete)\s*\(\s*['"]([^'"]+)['"]/g;
   while((m=pyRouteRx.exec(text))){
+    if(!anchorIsCode(m.index)) continue;
     const method = m[1] === 'route' ? 'GET' : m[1].toUpperCase();
     add(out.routes, `${method} ${m[2]}`);
   }
+  // ── Dispatch routes beyond HTTP ────────────────────────────────────────────
+  // "Routes" are the named hand-off points between functions, tools and
+  // programs — the interconnectivity RootRabbit:Rgano gauges in ANY codebase,
+  // not just web servers. An IDE extension, a CLI, or an MCP server routes via
+  // commands and events, so we capture those too:
+  //   CMD  <id>  — a command/tool this file PROVIDES (registers/handles)
+  //   CALL <id>  — a command/tool this file INVOKES (an outbound edge)
+  //   EVT  <name> — a pub/sub or IPC channel this file wires
+  const cmdRegRx=/\bregister(?:TextEditor|Webview\w*)?Command\s*\(\s*['"`]([^'"`\n]+)['"`]/g;
+  while((m=cmdRegRx.exec(text))){ if(anchorIsCode(m.index)) add(out.routes, `CMD ${m[1]}`); }
+  const cmdCallRx=/\bexecuteCommand\s*\(\s*['"`]([^'"`\n]+)['"`]/g;
+  while((m=cmdCallRx.exec(text))){ if(anchorIsCode(m.index)) add(out.routes, `CALL ${m[1]}`); }
+  // Registered tools (MCP servers, tool frameworks): registerTool("name", ...),
+  // add_tool("name"), @tool("name"), tool(name="...").
+  const toolRegRx=/\b(?:registerTool|add_tool|tool)\s*\(\s*(?:name\s*=\s*)?['"]([A-Za-z_][\w.:-]{1,80})['"]/g;
+  while((m=toolRegRx.exec(text))){ if(anchorIsCode(m.index)) add(out.routes, `TOOL ${m[1]}`); }
+  // Pub/sub + IPC channels: emitter.on('name'/.emit('name', socket.on('name',
+  // and webview/worker postMessage({ type: 'name' }). Kept to quoted channel
+  // names so it stays a real interconnection signal, not noise. Generic Node
+  // stream/process lifecycle events carry no interconnectivity meaning (every
+  // stream emits 'data'/'error'), so they're filtered out.
+  const EVT_NOISE = new Set(['data','error','end','close','finish','drain','readable',
+    'pause','resume','exit','beforeExit','SIGINT','SIGTERM','SIGHUP','SIGQUIT',
+    'uncaughtException','unhandledRejection','warning','abort','timeout']);
+  const evtRx=/\.(?:on|once|emit|addListener|subscribe)\s*\(\s*['"]([A-Za-z_][\w.:-]{1,60})['"]/g;
+  while((m=evtRx.exec(text))){ if(anchorIsCode(m.index) && !EVT_NOISE.has(m[1])) add(out.routes, `EVT ${m[1]}`); }
+  const msgTypeRx=/postMessage\s*\(\s*\{[^}]*?\btype\s*:\s*['"]([A-Za-z_][\w.:-]{1,60})['"]/g;
+  while((m=msgTypeRx.exec(text))){ if(anchorIsCode(m.index)) add(out.routes, `MSG ${m[1]}`); }
   const fnRx=/\b(?:async\s+)?function\s+([A-Za-z_$][\w$]*)\s*\(|\bconst\s+([A-Za-z_$][\w$]*)\s*=\s*(?:async\s*)?\([^)]*\)\s*=>/g;
   while((m=fnRx.exec(text))) add(out.functions,m[1]||m[2]);
   const idRx=/\bid\s*=\s*['"]([^'"]+)['"]/g;
@@ -215,7 +286,14 @@ function extractStructure(rel,text){
   const scriptRx=/<script\b[^>]*src\s*=\s*['"]([^'"]+)['"]/gi;
   while((m=scriptRx.exec(text))) add(out.scripts,m[1]);
   if(path.basename(rel).toLowerCase()==='package.json'){
-    try{ const j=JSON.parse(text); out.package_scripts=j.scripts || {}; out.config_keys=Object.keys(j).sort(); } catch {}
+    try{
+      const j=JSON.parse(text); out.package_scripts=j.scripts || {}; out.config_keys=Object.keys(j).sort();
+      // A VS Code manifest declares command routes it wires into the editor —
+      // the dispatch surface that makes the extension interconnected.
+      const contribCmds = j.contributes && j.contributes.commands;
+      if(Array.isArray(contribCmds)) for(const c of contribCmds){ if(c && c.command) add(out.routes, `CMD ${c.command}`); }
+      if(Array.isArray(j.activationEvents)) for(const e of j.activationEvents){ const mm=/^onCommand:(.+)$/.exec(String(e)); if(mm) add(out.routes, `CMD ${mm[1]}`); }
+    } catch {}
   } else if(path.extname(rel).toLowerCase()==='.json'){
     try{ const j=JSON.parse(text); if(j && typeof j==='object' && !Array.isArray(j)) out.config_keys=Object.keys(j).sort(); } catch {}
   }

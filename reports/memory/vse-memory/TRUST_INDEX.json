@@ -150,7 +150,7 @@
     "layer": "unknown",
     "status": "candidate",
     "residue_score": 0,
-    "canon_score": 0.5,
+    "canon_score": 0.6,
     "risk_score": 0,
     "residue_signals": []
   },
@@ -160,7 +160,7 @@
     "layer": "unknown",
     "status": "candidate",
     "residue_score": 0,
-    "canon_score": 0.7,
+    "canon_score": 0.8,
     "risk_score": 0,
     "residue_signals": []
   },
@@ -180,7 +180,7 @@
     "layer": "unknown",
     "status": "candidate",
     "residue_score": 0.15,
-    "canon_score": 0.7,
+    "canon_score": 0.8,
     "risk_score": 10,
     "residue_signals": [
       "agent_runtime_residue"
@@ -196,103 +196,31 @@
     "risk_score": 0,
     "residue_signals": []
   },
-  "tmrfs:file:1dc2720d921160b4:19": {
-    "path": "reports/rgano/vse-rgano/RGANO_STRUCTURE_SCAN.json",
-    "role": "rgano_component",
-    "layer": "unknown",
-    "status": "review",
-    "residue_score": 0.45,
-    "canon_score": 0.5,
-    "risk_score": 50,
-    "residue_signals": [
-      "agent_runtime_residue",
-      "tracking_or_analytics_surface",
-      "email_capture_surface"
-    ]
-  },
-  "tmrfs:file:8cbc5ef5d60f4285:20": {
-    "path": "reports/rgano/vse-rgano/RGANO_STRUCTURE_SCAN.md",
-    "role": "rgano_component",
-    "layer": "unknown",
-    "status": "candidate",
-    "residue_score": 0.15,
-    "canon_score": 0.5,
-    "risk_score": 10,
-    "residue_signals": [
-      "agent_runtime_residue"
-    ]
-  },
-  "tmrfs:file:0ca3a008359e3820:21": {
-    "path": "reports/rpg/vse-rpg/rpg.md",
-    "role": "documentation",
-    "layer": "unknown",
-    "status": "candidate",
-    "residue_score": 0,
-    "canon_score": 0.5,
-    "risk_score": 0,
-    "residue_signals": []
-  },
-  "tmrfs:file:b38af3023b93db34:22": {
-    "path": "reports/rpg/vse-rpg/rpg.sql",
-    "role": "artifact",
-    "layer": "unknown",
-    "status": "candidate",
-    "residue_score": 0.15,
-    "canon_score": 0.5,
-    "risk_score": 10,
-    "residue_signals": [
-      "agent_runtime_residue"
-    ]
-  },
-  "tmrfs:file:0d7a41bfce1c4e5b:23": {
-    "path": "reports/timeline/vse-timeline/pk-timeline.md",
-    "role": "documentation",
-    "layer": "unknown",
-    "status": "candidate",
-    "residue_score": 0,
-    "canon_score": 0.5,
-    "risk_score": 0,
-    "residue_signals": []
-  },
-  "tmrfs:file:89f267a4565bff69:24": {
-    "path": "reports/timeline/vse-timeline/pk-timeline.sql",
-    "role": "artifact",
-    "layer": "unknown",
-    "status": "review",
-    "residue_score": 0.45,
-    "canon_score": 0.5,
-    "risk_score": 50,
-    "residue_signals": [
-      "agent_runtime_residue",
-      "tracking_or_analytics_surface",
-      "email_capture_surface"
-    ]
-  },
-  "tmrfs:file:f1d09b3151437b1d:25": {
+  "tmrfs:file:f1d09b3151437b1d:19": {
     "path": "src/extension.js",
     "role": "code_module",
     "layer": "unknown",
     "status": "candidate",
     "residue_score": 0.15,
-    "canon_score": 0.5,
+    "canon_score": 0.6,
     "risk_score": 10,
     "residue_signals": [
       "agent_runtime_residue"
     ]
   },
-  "tmrfs:file:b9e35f38508ae942:26": {
+  "tmrfs:file:b9e35f38508ae942:20": {
     "path": "src/planekey-init.ts",
     "role": "planekey_component",
     "layer": "unknown",
     "status": "candidate",
     "residue_score": 0.15,
-    "canon_score": 0.8,
+    "canon_score": 0.7,
     "risk_score": 20,
     "residue_signals": [
       "tracking_or_analytics_surface"
     ]
   },
-  "tmrfs:file:4993cd2e27eda6ba:27": {
+  "tmrfs:file:4993cd2e27eda6ba:21": {
     "path": "src/planekey-integration-glue.ts",
     "role": "planekey_component",
     "layer": "unknown",
@@ -302,7 +230,7 @@
     "risk_score": 0,
     "residue_signals": []
   },
-  "tmrfs:file:d85b7625b8e2a74b:28": {
+  "tmrfs:file:d85b7625b8e2a74b:22": {
     "path": "src/planekey-licensing-compliance.ts",
     "role": "planekey_component",
     "layer": "unknown",
@@ -314,7 +242,7 @@
       "tracking_or_analytics_surface"
     ]
   },
-  "tmrfs:file:3f16ec5490019f78:29": {
+  "tmrfs:file:3f16ec5490019f78:23": {
     "path": "src/planekey-multi-project.ts",
     "role": "planekey_component",
     "layer": "unknown",
@@ -324,7 +252,7 @@
     "risk_score": 0,
     "residue_signals": []
   },
-  "tmrfs:file:502979a18f0b38fb:30": {
+  "tmrfs:file:502979a18f0b38fb:24": {
     "path": "src/planekey-vcs-hooks.ts",
     "role": "planekey_component",
     "layer": "unknown",
@@ -334,7 +262,7 @@
     "risk_score": 0,
     "residue_signals": []
   },
-  "tmrfs:file:bc9dc5f405bd7e38:31": {
+  "tmrfs:file:bc9dc5f405bd7e38:25": {
     "path": "src/planekey-vcs-integration.ts",
     "role": "planekey_component",
     "layer": "unknown",
@@ -344,7 +272,7 @@
     "risk_score": 0,
     "residue_signals": []
   },
-  "tmrfs:file:1899772150fcae66:32": {
+  "tmrfs:file:1899772150fcae66:26": {
     "path": "src/providers/predictiveTypingProvider.js",
     "role": "code_module",
     "layer": "unknown",
@@ -354,7 +282,7 @@
     "risk_score": 0,
     "residue_signals": []
   },
-  "tmrfs:file:b4cd7560b0c76cbb:33": {
+  "tmrfs:file:b4cd7560b0c76cbb:27": {
     "path": "toolchain/mcp/claude_desktop_config.example.json",
     "role": "agent_runtime",
     "layer": "unknown",
@@ -366,7 +294,7 @@
       "agent_runtime_residue"
     ]
   },
-  "tmrfs:file:dc7fd83c77574c59:34": {
+  "tmrfs:file:dc7fd83c77574c59:28": {
     "path": "toolchain/mcp/cursor_mcp_config.example.json",
     "role": "agent_runtime",
     "layer": "unknown",
@@ -378,7 +306,7 @@
       "agent_runtime_residue"
     ]
   },
-  "tmrfs:file:228f865917c1b2b6:35": {
+  "tmrfs:file:228f865917c1b2b6:29": {
     "path": "toolchain/mcp/planekey_env_observer_server.py",
     "role": "agent_runtime",
     "layer": "unknown",
@@ -390,7 +318,7 @@
       "agent_runtime_residue"
     ]
   },
-  "tmrfs:file:5fdd77b2b527897c:36": {
+  "tmrfs:file:5fdd77b2b527897c:30": {
     "path": "toolchain/mcp/requirements.txt",
     "role": "agent_runtime",
     "layer": "unknown",
@@ -402,13 +330,13 @@
       "agent_runtime_residue"
     ]
   },
-  "tmrfs:file:79e8d585fda5c54f:37": {
+  "tmrfs:file:79e8d585fda5c54f:31": {
     "path": "toolchain/pk-client/bin/pk-client.js",
     "role": "code_module",
     "layer": "unknown",
     "status": "block",
     "residue_score": 0.6,
-    "canon_score": 0.5,
+    "canon_score": 0.6,
     "risk_score": 90,
     "residue_signals": [
       "agent_runtime_residue",
@@ -417,7 +345,7 @@
       "prompt_injection_residue"
     ]
   },
-  "tmrfs:file:043e82c453d33898:38": {
+  "tmrfs:file:043e82c453d33898:32": {
     "path": "toolchain/pk-client/lib/detect.js",
     "role": "code_module",
     "layer": "unknown",
@@ -427,7 +355,7 @@
     "risk_score": 0,
     "residue_signals": []
   },
-  "tmrfs:file:3cbd17ebad965913:39": {
+  "tmrfs:file:3cbd17ebad965913:33": {
     "path": "toolchain/pk-client/lib/mmx.js",
     "role": "code_module",
     "layer": "unknown",
@@ -437,7 +365,7 @@
     "risk_score": 0,
     "residue_signals": []
   },
-  "tmrfs:file:135653f504eae9c4:40": {
+  "tmrfs:file:135653f504eae9c4:34": {
     "path": "toolchain/pk-client/lib/schema.js",
     "role": "code_module",
     "layer": "unknown",
@@ -447,13 +375,13 @@
     "risk_score": 0,
     "residue_signals": []
   },
-  "tmrfs:file:356a04c16cf675eb:41": {
+  "tmrfs:file:3319227d091adab3:35": {
     "path": "toolchain/pk-memory/pk-memory.js",
     "role": "code_module",
     "layer": "unknown",
     "status": "block",
     "residue_score": 0.6,
-    "canon_score": 0.6,
+    "canon_score": 0.5,
     "risk_score": 90,
     "residue_signals": [
       "agent_runtime_residue",

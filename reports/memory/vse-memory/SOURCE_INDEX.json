@@ -1,18 +1,17 @@
 {
-  "rgano-demo": {
+  "demo-src": {
     "kind": "folder",
     "root": "<repo-root>",
     "origin_chain": [],
-    "file_count": 42,
-    "bytes": 1246428,
+    "file_count": 36,
+    "bytes": 873505,
     "roles": {
-      "artifact": 7,
+      "artifact": 5,
       "json_config": 2,
-      "documentation": 8,
+      "documentation": 6,
       "planekey_component": 8,
       "code_module": 9,
       "package_manifest": 2,
-      "rgano_component": 2,
       "agent_runtime": 4
     }
   }

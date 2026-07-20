@@ -2,23 +2,23 @@
 
 Rgano signatures group artifacts by structural behavior rather than exact hash.
 
-- 432.5 code_module toolchain/pk-client/bin/pk-client.js routes=0 imports=10 sig=0b28385bd5fa4c38
-- 140.5 code_module toolchain/pk-memory/pk-memory.js routes=2 imports=6 sig=d81104beabb2c33f
-- 106.5 code_module src/extension.js routes=0 imports=6 sig=abfaebd58ec1d806
-- 39.0 planekey_component src/planekey-init.ts routes=2 imports=4 sig=e7d3e8e43eda3838
-- 32.5 planekey_component src/planekey-integration-glue.ts routes=1 imports=5 sig=13ba31c9921813a2
+- 437.5 code_module toolchain/pk-client/bin/pk-client.js routes=1 imports=10 sig=29a2d71ec58e1849
+- 197.0 package_manifest package.json routes=39 imports=0 sig=4cfdbc35350edeee
+- 133.5 code_module toolchain/pk-memory/pk-memory.js routes=0 imports=6 sig=833f30707f1400bb
+- 111.5 code_module src/extension.js routes=1 imports=6 sig=50554e15b64659f3
+- 42.0 code_module docs/predictive-typing-alt/extension.ts routes=5 imports=7 sig=d28e7a7f08ee0425
+- 37.5 planekey_component src/planekey-integration-glue.ts routes=2 imports=5 sig=5cf3f132665de3e6
+- 37.0 package_manifest docs/predictive-typing-alt/package.json routes=5 imports=0 sig=5a58f0760c535cd2
 - 29.5 planekey_component src/planekey-vcs-integration.ts routes=0 imports=5 sig=e00092e259793194
+- 29.0 planekey_component src/planekey-init.ts routes=0 imports=4 sig=1cc2fd4e2982e389
 - 27.0 planekey_component src/planekey-multi-project.ts routes=0 imports=3 sig=5ad24c295e8e1473
 - 23.5 planekey_component src/planekey-vcs-hooks.ts routes=0 imports=5 sig=970fdc81780db15b
 - 21.5 planekey_component src/planekey-licensing-compliance.ts routes=0 imports=4 sig=78864109b6bd1a14
 - 17.5 code_module toolchain/pk-client/lib/schema.js routes=0 imports=2 sig=e98ef34bca9f9c7b
-- 17.0 code_module docs/predictive-typing-alt/extension.ts routes=0 imports=7 sig=c710b6648354a6f4
-- 12.0 package_manifest docs/predictive-typing-alt/package.json routes=0 imports=0 sig=8f5de03da451a608
 - 8.5 code_module toolchain/pk-client/lib/detect.js routes=0 imports=2 sig=3a80d2051e2209c1
 - 8.0 code_module src/providers/predictiveTypingProvider.js routes=0 imports=4 sig=3f78d6e3c7d88e2d
 - 6.0 code_module toolchain/pk-client/lib/mmx.js routes=0 imports=0 sig=ddce530ca85e46a9
 - 5.5 code_module docs/predictive-typing-alt/.vscode-test.js routes=0 imports=2 sig=147c5f870568bd37
-- 2.0 package_manifest package.json routes=0 imports=0 sig=8235e0ad8aeaf3e3
 - 0.0 artifact .DS_Store routes=0 imports=0 sig=27fa050e963816f9
 - 0.0 json_config .vscode/launch.json routes=0 imports=0 sig=723c46e35cf42ed3
 - 0.0 artifact .vscodeignore routes=0 imports=0 sig=8d0b3b2efddbe6d6

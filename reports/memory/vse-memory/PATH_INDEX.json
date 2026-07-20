@@ -56,73 +56,55 @@
   "planekey-trust-layer-0.4.0.vsix": [
     "tmrfs:file:3059cd73b3786d31:18"
   ],
-  "reports/rgano/vse-rgano/RGANO_STRUCTURE_SCAN.json": [
-    "tmrfs:file:1dc2720d921160b4:19"
-  ],
-  "reports/rgano/vse-rgano/RGANO_STRUCTURE_SCAN.md": [
-    "tmrfs:file:8cbc5ef5d60f4285:20"
-  ],
-  "reports/rpg/vse-rpg/rpg.md": [
-    "tmrfs:file:0ca3a008359e3820:21"
-  ],
-  "reports/rpg/vse-rpg/rpg.sql": [
-    "tmrfs:file:b38af3023b93db34:22"
-  ],
-  "reports/timeline/vse-timeline/pk-timeline.md": [
-    "tmrfs:file:0d7a41bfce1c4e5b:23"
-  ],
-  "reports/timeline/vse-timeline/pk-timeline.sql": [
-    "tmrfs:file:89f267a4565bff69:24"
-  ],
   "src/extension.js": [
-    "tmrfs:file:f1d09b3151437b1d:25"
+    "tmrfs:file:f1d09b3151437b1d:19"
   ],
   "src/planekey-init.ts": [
-    "tmrfs:file:b9e35f38508ae942:26"
+    "tmrfs:file:b9e35f38508ae942:20"
   ],
   "src/planekey-integration-glue.ts": [
-    "tmrfs:file:4993cd2e27eda6ba:27"
+    "tmrfs:file:4993cd2e27eda6ba:21"
   ],
   "src/planekey-licensing-compliance.ts": [
-    "tmrfs:file:d85b7625b8e2a74b:28"
+    "tmrfs:file:d85b7625b8e2a74b:22"
   ],
   "src/planekey-multi-project.ts": [
-    "tmrfs:file:3f16ec5490019f78:29"
+    "tmrfs:file:3f16ec5490019f78:23"
   ],
   "src/planekey-vcs-hooks.ts": [
-    "tmrfs:file:502979a18f0b38fb:30"
+    "tmrfs:file:502979a18f0b38fb:24"
   ],
   "src/planekey-vcs-integration.ts": [
-    "tmrfs:file:bc9dc5f405bd7e38:31"
+    "tmrfs:file:bc9dc5f405bd7e38:25"
   ],
   "src/providers/predictiveTypingProvider.js": [
-    "tmrfs:file:1899772150fcae66:32"
+    "tmrfs:file:1899772150fcae66:26"
   ],
   "toolchain/mcp/claude_desktop_config.example.json": [
-    "tmrfs:file:b4cd7560b0c76cbb:33"
+    "tmrfs:file:b4cd7560b0c76cbb:27"
   ],
   "toolchain/mcp/cursor_mcp_config.example.json": [
-    "tmrfs:file:dc7fd83c77574c59:34"
+    "tmrfs:file:dc7fd83c77574c59:28"
   ],
   "toolchain/mcp/planekey_env_observer_server.py": [
-    "tmrfs:file:228f865917c1b2b6:35"
+    "tmrfs:file:228f865917c1b2b6:29"
   ],
   "toolchain/mcp/requirements.txt": [
-    "tmrfs:file:5fdd77b2b527897c:36"
+    "tmrfs:file:5fdd77b2b527897c:30"
   ],
   "toolchain/pk-client/bin/pk-client.js": [
-    "tmrfs:file:79e8d585fda5c54f:37"
+    "tmrfs:file:79e8d585fda5c54f:31"
   ],
   "toolchain/pk-client/lib/detect.js": [
-    "tmrfs:file:043e82c453d33898:38"
+    "tmrfs:file:043e82c453d33898:32"
   ],
   "toolchain/pk-client/lib/mmx.js": [
-    "tmrfs:file:3cbd17ebad965913:39"
+    "tmrfs:file:3cbd17ebad965913:33"
   ],
   "toolchain/pk-client/lib/schema.js": [
-    "tmrfs:file:135653f504eae9c4:40"
+    "tmrfs:file:135653f504eae9c4:34"
   ],
   "toolchain/pk-memory/pk-memory.js": [
-    "tmrfs:file:356a04c16cf675eb:41"
+    "tmrfs:file:3319227d091adab3:35"
   ]
 }
