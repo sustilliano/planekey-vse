@@ -20,8 +20,11 @@ one install ─┬─ in the editor  → PlaneKey sidebar, chat, predictive typi
   (E2EE Burrow send), *Inbox* (warren inbox, live unread badge), and
   *Settings*. Open it with **`PlaneKey: Open Chat`** or the 💬 button at the
   top of the PlaneKey sidebar.
-- **Risk-aware predictive typing** — inline completions backed by
-  `pk-client` + `pk-memory`, filtered by canon score and risk.
+- **Risk-aware predictive typing** — inline ghost-text completions in the
+  editor, drawn from your own codebase's identifiers in the PlaneKey reports,
+  ranked by canon (source-of-truth) with secrets suppressed. Fully local:
+  no AI, no network, no per-keystroke subprocess. Run
+  `PlaneKey: Index Codebase` (or any snapshot) to build the index.
 - **Trust surface** — a PlaneKey status-bar badge and sidebar showing
   current-file risk and recent scan results.
 - **Scans** — RepoGuard, PixelGuard, ResidueGuard, RootRabbit, SafetyNet.

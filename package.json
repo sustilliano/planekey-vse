@@ -2,7 +2,7 @@
   "name": "planekey-trust-layer",
   "displayName": "PlaneKey Trust Layer",
   "description": "One download, three surfaces: the PlaneKey toolchain (pk-client, pk-memory, Env-Observer MCP server) bundled into an IDE trust/control layer for AI-built software — use it in the editor, from the CLI, or over MCP.",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "publisher": "planekey",
   "license": "SEE LICENSE IN LICENSE-PROPRIETARY",
   "engines": {
@@ -31,7 +31,9 @@
         "planekey.serviceId": { "type": "string", "default": "ide-workspace", "description": "Service id for MCP observations (PLANEKEY_SERVICE_ID)." },
         "planekey.environmentId": { "type": "string", "default": "local-dev", "description": "Environment id for MCP observations (PLANEKEY_ENVIRONMENT_ID)." },
         "planekey.mcpAllowSubmit": { "type": "boolean", "default": false, "description": "Allow the MCP server to submit reports to the Home Bridge." },
-        "planekey.predictive.enabled": { "type": "boolean", "default": true, "description": "Enable PlaneKey risk-aware predictive typing (inline completions)." },
+        "planekey.predictive.enabled": { "type": "boolean", "default": true, "description": "Enable PlaneKey risk-aware predictive typing (inline completions). Local, no AI — suggestions come from your canon in the PlaneKey reports." },
+        "planekey.predictive.minPrefix": { "type": "number", "default": 2, "minimum": 1, "maximum": 8, "description": "Minimum characters typed before predictive typing offers a suggestion." },
+        "planekey.predictive.maxSuggestions": { "type": "number", "default": 5, "minimum": 1, "maximum": 15, "description": "Maximum number of inline predictive-typing suggestions to offer at once." },
         "planekey.memory.minCanonScore": { "type": "number", "default": 0.5, "minimum": 0, "maximum": 1, "description": "Minimum canon score (0.0–1.0) to surface a pk-memory suggestion." },
         "planekey.memory.maxRiskScore": { "type": "number", "default": 30, "minimum": 0, "maximum": 100, "description": "Maximum risk score for a pk-client pattern to be surfaced." },
         "planekey.memory.excludeSignals": { "type": "array", "default": ["agent_runtime_residue", "secret_or_private_material"], "description": "Never suggest patterns carrying these residue signals." },
@@ -169,6 +171,6 @@
     }
   },
   "scripts": {
-    "smoke": "node -c src/extension.js && node -c src/providers/predictiveTypingProvider.js && node -c src/panels/chatPanel.js && node -c src/panels/snapshotCard.js && node -c toolchain/pk-memory/pk-memory.js"
+    "smoke": "node -c src/extension.js && node -c src/providers/predictiveTypingProvider.js && node -c src/providers/predictiveIndex.js && node -c src/panels/chatPanel.js && node -c src/panels/snapshotCard.js && node -c toolchain/pk-memory/pk-memory.js"
   }
 }

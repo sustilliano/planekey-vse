@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.6.0
+
+- **Predictive typing is now one working, local feature.** It was split
+  between a wired-in provider that called a non-existent
+  `pk-memory memory suggest` verb (so it returned nothing) and a dead,
+  never-built duplicate extension under `docs/predictive-typing-alt/`.
+  Consolidated into the single extension and rebuilt to run **entirely
+  locally — no AI, no network, no per-keystroke subprocess**:
+  - New `src/providers/predictiveIndex.js` builds an in-memory index from the
+    PlaneKey reports we already generate (`STRUCTURE_INDEX.json` for the real
+    identifiers — functions, imports, routes, config keys; `CANON_CANDIDATES`
+    for ranking; `RESIDUE_CANDIDATES` to suppress secrets).
+  - `predictiveTypingProvider.js` rewritten to serve inline ghost-text
+    completions synchronously from that index, ranked by canon and blended
+    with the open document's own identifiers, like Copilot/Ponicode but
+    deterministic and offline. (A future sentence-transformers pass could
+    re-rank semantically; deliberately not required.)
+  - Only genuinely sensitive files (`secret_or_private_material`) are
+    excluded — a function name is not a secret, so the broad keyword-based
+    `agent_runtime_residue` no longer drops the codebase's own API.
+  - `PlaneKey: Index Codebase` and every snapshot now rebuild the index;
+    added `planekey.predictive.minPrefix` / `planekey.predictive.maxSuggestions`.
+  - Removed the dead `docs/predictive-typing-alt/` scaffold.
+
 ## 0.5.0
 
 Feature release. Rolls up the work recorded as 0.4.2–0.4.7 below, which is

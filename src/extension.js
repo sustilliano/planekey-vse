@@ -47,13 +47,11 @@ function activate(context) {
   );
 
   // ── Predictive typing inline completion ──────────────────────────────────
-  predictiveProvider = new PredictiveTypingProvider(
-    getProjectRoot(),
-    getPkClient,
-    getPkMemory,
-    getNode,
-    (msg) => appendLog(msg)
-  );
+  predictiveProvider = new PredictiveTypingProvider({
+    getProjectRoot,
+    getReportRoot,
+    log: (msg) => appendLog(msg)
+  });
   const COMPLETION_LANGUAGES = [
     { scheme: 'file', language: 'javascript' },
     { scheme: 'file', language: 'typescript' },
@@ -294,8 +292,14 @@ async function indexCodebase() {
   const name = scanName('ide-memory');
   vscode.window.showInformationMessage('PlaneKey: Indexing codebase for predictive typing...');
   await runExternalBinary('Index Codebase', getPkMemory(), ['memory', 'build', getProjectRoot(), '--name', name]);
-  if (predictiveProvider) predictiveProvider.invalidateCache();
-  vscode.window.showInformationMessage('PlaneKey: Codebase indexed. Predictive typing cache refreshed.');
+  if (predictiveProvider) {
+    predictiveProvider.invalidateCache();
+    predictiveProvider.reloadIndex();
+    const s = predictiveProvider.stats();
+    vscode.window.showInformationMessage(`PlaneKey: Codebase indexed — predictive typing has ${s.identifiers} identifiers from your canon.`);
+    return;
+  }
+  vscode.window.showInformationMessage('PlaneKey: Codebase indexed.');
 }
 
 async function buildDB() {
@@ -356,7 +360,7 @@ async function snapshotWorkspace(options = {}) {
     return acc;
   });
 
-  if (predictiveProvider) predictiveProvider.invalidateCache();
+  if (predictiveProvider) { predictiveProvider.invalidateCache(); predictiveProvider.reloadIndex(); }
   refreshViews();
 
   // Front-door card (inside this snapshot's immutable folder) + append this
@@ -576,9 +580,6 @@ async function refreshStatus(options = {}) {
   lastState.projectRoot = getProjectRoot();
   lastState.pkClient = getPkClient();
   updateCurrentFileRisk();
-  // Keep predictive provider project root in sync
-  if (predictiveProvider) predictiveProvider.projectRoot = getProjectRoot();
-
   const result = await runPk(['status'], { cwd: getProjectRoot() });
   const combined = `${result.stdout}\n${result.stderr}`;
 
