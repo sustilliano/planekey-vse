@@ -16,6 +16,16 @@
     now runs scripts. Older (v1) reports without `score_100` are normalized on
     the fly, so the report works against any snapshot.
 
+### 0.10.0.A
+
+- Adopt the sub-minor `x.y.z.Q` designation — an optional 4th *letter* for
+  changes too small for a PATCH. **Capital** (`A`/`B`/`C`) = non-functional
+  (docs); **lowercase** (`a`/`b`/`c`) = typo fix. **Letter = intent:** `A`/`a`
+  testing, `B`/`b` proposing changes, `C`/`c` combining ideas. It's a `###`
+  note under its base version and **never touches `package.json`** (numbers
+  only), so `package.json` stays `0.10.0`. Defined in `docs/VERSIONING.md`.
+  This entry is itself a `0.10.0.A` — a capital-`A`, non-functional note.
+
 ## 0.9.0
 
 - **Routes now count CLI command dispatch** — a 50-verb CLI no longer reads as

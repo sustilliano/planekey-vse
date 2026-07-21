@@ -74,6 +74,45 @@ independent. Upgrading the bundled toolchain is a **MINOR** (new capability) or
 
 ---
 
+## Sub-minor designations (`x.y.z.Q`)
+
+Some changes are too small to earn even a PATCH — a doc tweak, a typo, a
+formatting or metadata touch — but are still worth recording. For those,
+PlaneKey appends an optional **4th position: a single letter**, `x.y.z.Q`. It
+logs the change in history *without moving the numeric version*.
+
+- **Case = kind of change**
+  - **Capital** (`A` `B` `C`) — a *non-functional* change: docs, comments,
+    formatting, metadata. Behavior is unchanged.
+  - **lowercase** (`a` `b` `c`) — a *typo correction*.
+- **Letter = intent**
+  - **`A` / `a`** — testing
+  - **`B` / `b`** — proposing changes
+  - **`C` / `c`** — combining different ideas together
+
+Examples: `0.10.0.A` (a non-functional, testing-oriented note on `0.10.0`);
+`0.10.0.b` (a typo fix while proposing changes).
+
+**How it's recorded.** A sub-minor is a `###` sub-heading *under* its base
+`## x.y.z` section in the changelog — e.g. `### 0.10.0.A` inside `## 0.10.0`.
+That keeps the numeric `## x.y.z` headings as the canonical release list (what
+the version-integrity check reads) and nests the letter notes beneath their
+release, so adopting the scheme needs no code change — it stays purely
+non-functional.
+
+**It never touches `package.json`.** The `.vsix` and the VS Code Marketplace
+accept **only numbers** (`X.Y.Z`), so a letter can't live there. At `0.10.0.A`,
+`package.json` stays `0.10.0`; the letter lives only in the changelog (and, if
+useful, a git tag like `v0.10.0.A`).
+
+**Never for functional changes.** Anything that changes behavior — even a
+one-line fix — is a numeric PATCH/MINOR/MAJOR, not a sub-minor. The letter is
+strictly for non-functional (capital) and typo (lowercase) notes.
+
+**Ordering:** `0.10.0 < 0.10.0.A < 0.10.0.B < … < 0.10.1`.
+
+---
+
 ## The `0.y.z` rule and the road to `1.0.0`
 
 SemVer **§4**: "Major version zero (0.y.z) is for initial development. Anything
@@ -170,9 +209,15 @@ A release is inconsistent if these disagree. CI should check 1↔2↔3.
 2. Otherwise, does it add any user-visible capability (command, setting, view,
    report, additive field)? → **MINOR**.
 3. Otherwise, does it fix incorrect behavior a user could observe? → **PATCH**.
-4. Otherwise (docs / chore / internal refactor) → **no bump**.
+4. Otherwise (docs / chore / internal refactor) → **no numeric bump**. If it's
+   worth recording, add a **sub-minor** `x.y.z.Q` note (capital letter for
+   non-functional/docs, lowercase for typos) — see
+   [Sub-minor designations](#sub-minor-designations-xyzq). `package.json` does
+   not move.
 5. Apply the bump to `package.json`, reset lower digits, add the matching
-   `## X.Y.Z` changelog heading (append-only), and tag `vX.Y.Z`.
+   `## X.Y.Z` changelog heading (append-only), and tag `vX.Y.Z`. (A sub-minor
+   adds a `### x.y.z.Q` note under its base section and leaves `package.json`
+   alone.)
 
 ---
 
@@ -188,6 +233,9 @@ A release is inconsistent if these disagree. CI should check 1↔2↔3.
 | `0.7.0` | Hands-on "Get Started" welcome | New feature → **MINOR** |
 | `0.7.1` | This versioning standard added | Governed standard → **PATCH** |
 | `0.8.0` | Version-integrity check in the snapshot system | New capability → **MINOR** |
+| `0.9.0` | CLI-dispatch routes + 0–100 score; pk-client doctor | New capability → **MINOR** |
+| `0.10.0` | Interactive, self-explaining snapshot report | New capability → **MINOR** |
+| `0.10.0.A` | Sub-minor letter scheme adopted (this) | Non-functional / docs → **sub-minor** (capital A) |
 
 ---
 
