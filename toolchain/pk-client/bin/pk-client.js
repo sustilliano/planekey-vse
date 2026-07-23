@@ -310,7 +310,7 @@ function loadConfig(root) {
   // Backfill new safety rails into older client.config.json files without
   // forcing users to manually regenerate their workspace config.
   merged.defaultAllowedFiles = uniqueList([
-    ...(fromDisk.defaultAllowedFiles || DEFAULT_CONFIG.defaultAllowedFiles),
+    ...(fromDisk.defaultAllowedFiles || DEFAULT_CONFIG.defaultAllowedFiles || []),
     'server/**'
   ]);
   merged.defaultForbiddenPaths = uniqueList([
