@@ -1,0 +1,8 @@
+{
+  "name": "pk-client",
+  "version": "0.1.5.14",
+  "description": "PlaneKey Client — bundled with the PlaneKey Trust Layer extension.",
+  "bin": { "pk-client": "bin/pk-client.js" },
+  "license": "SEE LICENSE IN ../../LICENSE-PROPRIETARY",
+  "private": true
+}

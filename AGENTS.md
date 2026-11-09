@@ -43,3 +43,11 @@ The VSCode extension invokes the locally-installed `pk-client` for the
 shared system-health verbs: `doctor`, `self-update`, and
 `memory`. See `products/system-health/README.md` on the `products`
 branch for the cross-product naming + per-product invocation table.
+
+## Versioning
+
+Every version bump follows **[docs/VERSIONING.md](docs/VERSIONING.md)** — the
+project standard: SemVer `MAJOR.MINOR.PATCH`, features → MINOR, fixes → PATCH,
+breaking → MAJOR (MINOR while pre-1.0, flagged BREAKING). `package.json`, the
+top `CHANGELOG.md` heading, and the git tag must agree, and the changelog is
+**append-only** — corrections are added, never rewritten over.
