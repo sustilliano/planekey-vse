@@ -6,6 +6,8 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const { PredictiveTypingProvider } = require('./providers/predictiveTypingProvider');
+const { ChatPanel } = require('./panels/chatPanel');
+const { openWelcome } = require('./panels/welcomePanel');
 
 const EXT_VERSION = '0.2.4';
 const OUTPUT_NAME = 'PlaneKey';
@@ -15,6 +17,7 @@ let statusBar;
 let trustProvider;
 let actionProvider;
 let predictiveProvider;
+let chatPanel;
 // Install root of THIS extension — the bundled toolchain (pk-client,
 // pk-memory, the MCP server) lives under <extensionRoot>/toolchain/, so a
 // fresh install works with zero config in the editor, from the CLI, and
@@ -45,13 +48,11 @@ function activate(context) {
   );
 
   // ── Predictive typing inline completion ──────────────────────────────────
-  predictiveProvider = new PredictiveTypingProvider(
-    getProjectRoot(),
-    getPkClient,
-    getPkMemory,
-    getNode,
-    (msg) => appendLog(msg)
-  );
+  predictiveProvider = new PredictiveTypingProvider({
+    getProjectRoot,
+    getReportRoot,
+    log: (msg) => appendLog(msg)
+  });
   const COMPLETION_LANGUAGES = [
     { scheme: 'file', language: 'javascript' },
     { scheme: 'file', language: 'typescript' },
@@ -67,6 +68,17 @@ function activate(context) {
     )
   );
   appendLog('[Predictive] Inline completion provider registered.');
+
+  // ── Chat control board (WebviewPanel) ────────────────────────────────────
+  chatPanel = new ChatPanel(
+    context,
+    getPkClient,
+    getNode,
+    getProjectRoot,
+    (msg) => appendLog(msg)
+  );
+  context.subscriptions.push({ dispose: () => chatPanel && chatPanel.dispose() });
+  appendLog('[Chat] Control board registered.');
 
   const commands = [
     ['planekey.refreshStatus', refreshStatus],
@@ -103,9 +115,18 @@ function activate(context) {
     ['planekey.refreshMcpServer', () => { mcpDidChange.fire(); vscode.window.showInformationMessage('PlaneKey MCP: re-registered with the MCP host.'); }],
     ['planekey.showCliSetup', showCliSetup],
     ['planekey.openPkClientTerminal', openPkClientTerminal],
+    ['planekey.pkClientDoctor', pkClientDoctor],
+    // Chat control board
+    ['planekey.getStarted', () => openWelcome(context, appendLog)],
+    ['planekey.openChat', () => chatPanel.open('ai')],
+    ['planekey.openChatDocs', () => chatPanel.open('docs')],
+    ['planekey.openChatDirect', () => chatPanel.open('direct')],
+    ['planekey.openInbox', () => chatPanel.openInbox()],
     // Predictive typing commands
     ['planekey.indexCodebase', indexCodebase],
     ['planekey.buildDB', buildDB],
+    ['planekey.snapshotWorkspace', snapshotWorkspace],
+    ['planekey.checkVersion', checkVersionIntegrity],
     ['planekey.refreshCache', refreshPredictiveCache],
     ['planekey.showMemoryStats', showMemoryStats],
     ['planekey.togglePredictive', togglePredictive]
@@ -144,6 +165,18 @@ function activate(context) {
 
   updateCurrentFileRisk();
   refreshStatus({ quiet: true });
+
+  // First run: show the hands-on welcome once (choose follow-along or dive-in).
+  if (!context.globalState.get('planekey.welcomed')) {
+    context.globalState.update('planekey.welcomed', true);
+    setTimeout(() => { try { openWelcome(context, appendLog); } catch (_) {} }, 1200);
+  }
+
+  // Optional: generate a full workspace snapshot on init (like pk snapshot),
+  // so a fresh session starts with an up-to-date report set.
+  if (getConfig().get('snapshotOnStartup')) {
+    setTimeout(() => snapshotWorkspace({ quiet: true }), 2500);
+  }
 }
 
 function deactivate() {
@@ -269,8 +302,14 @@ async function indexCodebase() {
   const name = scanName('ide-memory');
   vscode.window.showInformationMessage('PlaneKey: Indexing codebase for predictive typing...');
   await runExternalBinary('Index Codebase', getPkMemory(), ['memory', 'build', getProjectRoot(), '--name', name]);
-  if (predictiveProvider) predictiveProvider.invalidateCache();
-  vscode.window.showInformationMessage('PlaneKey: Codebase indexed. Predictive typing cache refreshed.');
+  if (predictiveProvider) {
+    predictiveProvider.invalidateCache();
+    predictiveProvider.reloadIndex();
+    const s = predictiveProvider.stats();
+    vscode.window.showInformationMessage(`PlaneKey: Codebase indexed — predictive typing has ${s.identifiers} identifiers from your canon.`);
+    return;
+  }
+  vscode.window.showInformationMessage('PlaneKey: Codebase indexed.');
 }
 
 async function buildDB() {
@@ -285,6 +324,152 @@ function refreshPredictiveCache() {
     predictiveProvider.invalidateCache();
     vscode.window.showInformationMessage('PlaneKey: Predictive typing cache cleared.');
   }
+}
+
+// ── Workspace snapshot ───────────────────────────────────────────────────────
+// Runs the whole RootRabbit:Rgano / TMrFS report suite into an IMMUTABLE,
+// timestamped folder: <reportRoot>/snapshots/<id>/. Snapshots are never
+// overwritten — each run is added, past runs are kept — so you accumulate an
+// honest history of the codebase over time (which is the whole point of a
+// memory / lineage tool). A running ledger (snapshots/index.json) is the
+// append-only record; snapshots/index.html is a derived view of it.
+const SNAPSHOT_REPORTS = [
+  { label: 'Rgano structure scan', args: (root, out) => ['rgano', 'scan', root, '--name', 'snapshot', '--out', out] },
+  { label: 'Repository Planning Graph', args: (root, out) => ['memory', 'rpg', root, '--name', 'snapshot', '--out', out] },
+  { label: 'Timeline', args: (root, out) => ['memory', 'timeline', root, '--name', 'snapshot', '--out', out] },
+  { label: 'TMrFS memory', args: (root, out) => ['memory', 'build', root, '--name', 'snapshot', '--out', out] }
+];
+
+// FS-safe, sortable, unique to the millisecond — never reused, never reissued.
+function snapshotId(d = new Date()) { return d.toISOString().replace(/[:.]/g, '-'); }
+
+async function snapshotWorkspace(options = {}) {
+  const root = getProjectRoot();
+  const reportRoot = getReportRoot();
+  const quiet = !!options.quiet;
+  const takenAt = new Date();
+  const id = snapshotId(takenAt);
+  const snapDir = path.join(reportRoot, 'snapshots', id);
+
+  const results = await vscode.window.withProgress({
+    location: vscode.ProgressLocation.Notification,
+    title: `PlaneKey: Snapshot ${id}`,
+    cancellable: false
+  }, async (progress) => {
+    const acc = [];
+    for (let i = 0; i < SNAPSHOT_REPORTS.length; i++) {
+      const step = SNAPSHOT_REPORTS[i];
+      progress.report({ message: `${step.label} (${i + 1}/${SNAPSHOT_REPORTS.length})`, increment: 100 / SNAPSHOT_REPORTS.length });
+      const r = await runBinary(getPkMemory(), step.args(root, snapDir), { cwd: root });
+      lastState.lastRuns[`Snapshot: ${step.label}`] = {
+        time: new Date().toISOString(), code: r.code, ok: !r.error,
+        summary: summarizeOutput(r.stdout + '\n' + r.stderr)
+      };
+      acc.push({ label: step.label, ok: !r.error });
+    }
+    return acc;
+  });
+
+  if (predictiveProvider) { predictiveProvider.invalidateCache(); predictiveProvider.reloadIndex(); }
+  refreshViews();
+
+  // Front-door card (inside this snapshot's immutable folder) + append this
+  // run to the history ledger. Nothing here rewrites a previous snapshot.
+  let cardHtml = '';
+  const title = path.basename(root) || 'workspace';
+  try {
+    const { loadSnapshotData, buildSnapshotHtml, summarizeSnapshot, buildHistoryHtml } = require('./panels/snapshotCard');
+    // Version integrity is a checker like residue/canon — run it and record it
+    // in the snapshot so the standard is enforced, not just documented.
+    try {
+      const vi = require('./checks/versionIntegrity').checkVersionIntegrity(root);
+      fs.writeFileSync(path.join(snapDir, 'VERSION_INTEGRITY.json'), JSON.stringify(vi, null, 2) + '\n');
+      if (!vi.ok) appendLog(`[Snapshot] version integrity: ${vi.warnings} warning(s) — run PlaneKey: Check Version Integrity.`);
+    } catch (e) { appendLog('[Snapshot] version check skipped: ' + e.message); }
+    const data = loadSnapshotData(snapDir, {});
+    cardHtml = buildSnapshotHtml(data, { title, id, takenAt: takenAt.toISOString() });
+    fs.writeFileSync(path.join(snapDir, 'snapshot.html'), cardHtml);
+
+    const ledgerPath = path.join(reportRoot, 'snapshots', 'index.json');
+    let ledger = [];
+    try { const j = JSON.parse(fs.readFileSync(ledgerPath, 'utf8')); if (Array.isArray(j)) ledger = j; } catch (_) { /* first run */ }
+    ledger.push(Object.assign({ id, taken_at: takenAt.toISOString(), title, path: `${id}/snapshot.html` }, summarizeSnapshot(data)));
+    fs.writeFileSync(ledgerPath, JSON.stringify(ledger, null, 2) + '\n');
+    fs.writeFileSync(path.join(reportRoot, 'snapshots', 'index.html'), buildHistoryHtml(ledger, { title }));
+  } catch (e) { appendLog('[Snapshot] card/ledger skipped: ' + e.message); }
+
+  const failed = results.filter(r => !r.ok);
+  const rel = path.relative(root, snapDir) || snapDir;
+  if (quiet) {
+    appendLog(`[Snapshot] ${id}: wrote ${results.length - failed.length}/${results.length} reports to ${snapDir}`);
+    if (cardHtml) showSnapshotCard(cardHtml);
+    return;
+  }
+  if (failed.length) {
+    vscode.window.showWarningMessage(`PlaneKey snapshot ${id}: ${failed.length} of ${results.length} reports had issues (${failed.map(f => f.label).join(', ')}). See the PlaneKey output.`);
+    return;
+  }
+  const actions = cardHtml ? ['Open Snapshot', 'History', 'Open Folder'] : ['Open Folder'];
+  const pick = await vscode.window.showInformationMessage(
+    `PlaneKey snapshot ${id} saved — ${results.length} reports under ${rel}. Past snapshots kept.`, ...actions
+  );
+  if (pick === 'Open Snapshot') showSnapshotCard(cardHtml);
+  else if (pick === 'History') openSnapshotHistory(reportRoot);
+  else if (pick === 'Open Folder') openReports();
+}
+
+async function checkVersionIntegrity() {
+  let result;
+  try { result = require('./checks/versionIntegrity').checkVersionIntegrity(getProjectRoot()); }
+  catch (e) { vscode.window.showWarningMessage('PlaneKey: version check failed — ' + e.message); return; }
+  appendLog('\n[Version integrity] ' + (result.version || 'no version'));
+  for (const f of result.findings) appendLog(`  [${f.level}] ${f.message}`);
+  const warns = result.findings.filter(f => f.level === 'warn');
+  if (result.ok) {
+    vscode.window.showInformationMessage(`PlaneKey: version ${result.version} is consistent (changelog + tags).`);
+  } else {
+    const pick = await vscode.window.showWarningMessage(
+      `PlaneKey: version integrity — ${warns.length} to reconcile: ${warns[0] && warns[0].message}`,
+      'Show Details', 'Versioning Standard'
+    );
+    if (pick === 'Show Details') output.show(true);
+    else if (pick === 'Versioning Standard') {
+      const uri = vscode.Uri.file(path.join(extensionRoot, 'docs', 'VERSIONING.md'));
+      vscode.commands.executeCommand('markdown.showPreview', uri).then(undefined, () => vscode.window.showTextDocument(uri));
+    }
+  }
+}
+
+function openSnapshotHistory(reportRoot) {
+  try {
+    const html = fs.readFileSync(path.join(reportRoot, 'snapshots', 'index.html'), 'utf8');
+    showSnapshotCard(html);
+  } catch (_) {
+    vscode.window.showInformationMessage('PlaneKey: no snapshot history yet — run PlaneKey: Snapshot Workspace.');
+  }
+}
+
+let snapshotCardPanel;
+function showSnapshotCard(html) {
+  if (snapshotCardPanel) {
+    snapshotCardPanel.webview.html = html;
+    snapshotCardPanel.reveal(vscode.ViewColumn.Active, false);
+    return;
+  }
+  snapshotCardPanel = vscode.window.createWebviewPanel(
+    'planekeySnapshot', 'PlaneKey Snapshot', vscode.ViewColumn.Active,
+    { enableScripts: true, retainContextWhenHidden: true }
+  );
+  snapshotCardPanel.webview.html = html;
+  snapshotCardPanel.onDidDispose(() => { snapshotCardPanel = null; });
+}
+
+async function pkClientDoctor() {
+  await runPk(['self', 'version'], { cwd: getProjectRoot() });
+  const d = await runPk(['self', 'doctor'], { cwd: getProjectRoot() });
+  output.show(true);
+  if (d.error) vscode.window.showWarningMessage('PlaneKey pk-client doctor found issues — see the PlaneKey output.');
+  else vscode.window.showInformationMessage('PlaneKey pk-client doctor: PASS.');
 }
 
 async function showMemoryStats() {
@@ -442,9 +627,6 @@ async function refreshStatus(options = {}) {
   lastState.projectRoot = getProjectRoot();
   lastState.pkClient = getPkClient();
   updateCurrentFileRisk();
-  // Keep predictive provider project root in sync
-  if (predictiveProvider) predictiveProvider.projectRoot = getProjectRoot();
-
   const result = await runPk(['status'], { cwd: getProjectRoot() });
   const combined = `${result.stdout}\n${result.stderr}`;
 
@@ -832,8 +1014,14 @@ class ActionProvider {
   getChildren(element) {
     if (element) return [];
     return [
+      commandItem('Get Started', 'planekey.getStarted', 'rocket'),
+      commandItem('Open Chat', 'planekey.openChat', 'comment-discussion'),
+      commandItem('Open Inbox', 'planekey.openInbox', 'inbox'),
+      commandItem('Snapshot Workspace (all reports)', 'planekey.snapshotWorkspace', 'device-camera'),
+      commandItem('Check Version Integrity', 'planekey.checkVersion', 'versions'),
       commandItem('Refresh Trust Status', 'planekey.refreshStatus', 'refresh'),
       commandItem('Open pk-client Terminal', 'planekey.openPkClientTerminal', 'terminal'),
+      commandItem('pk-client Doctor', 'planekey.pkClientDoctor', 'pulse'),
       commandItem('── Predictive Typing ──', '', 'symbol-keyword'),
       commandItem('Index Codebase (Memory)', 'planekey.indexCodebase', 'symbol-class'),
       commandItem('Build Repo DB', 'planekey.buildDB', 'database'),

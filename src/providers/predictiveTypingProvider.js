@@ -3,235 +3,138 @@
 /**
  * PredictiveTypingProvider
  * ========================
- * VS Code inline-completion provider that queries pk-client and pk-memory
- * for risk-aware ghost-text suggestions.
+ * VS Code inline-completion provider that shows PlaneKey ghost-text
+ * suggestions in the editor as you type — like Copilot/Ponicode, but with
+ * NO AI and NO network. Every suggestion comes from a local index built out
+ * of the PlaneKey reports (see predictiveIndex.js): your codebase's own
+ * identifiers, ranked by canon (source-of-truth) and with residue (secrets /
+ * agent-runtime junk) suppressed.
  *
- * Data sources (in priority order):
- *   1. pk-memory  — canon-ranked patterns from TMrFS memory reports
- *   2. pk-client  — trust-state / coherence pack summaries
- *   3. MCP env-observer state — get_environment_state tool output (JSON)
- *
- * Each source is queried async with a short timeout so slow tools never
- * stall the editor. Results are cached per (file, prefix) for `cacheTtl`
- * seconds. Suggestions flagged with high-risk signals are suppressed.
+ * On each keystroke this does a fast in-memory prefix scan — no subprocess,
+ * no LLM call — so it never stalls the editor. The report index is loaded
+ * once (lazily) and reloaded after a snapshot / Index Codebase run. The open
+ * document's own identifiers are blended in so brand-new code is suggestable
+ * before the next snapshot.
  */
 
 const vscode = require('vscode');
-const cp = require('child_process');
-const path = require('path');
-const fs = require('fs');
 
-const DEFAULT_CACHE_TTL_MS = 30_000;
-const MAX_SUGGESTIONS = 5;
-const TOOL_TIMEOUT_MS = 4_000;
-
-// Residue signals that must never surface as suggestions.
-const BLOCKED_SIGNALS = [
-  'agent_runtime_residue',
-  'secret_or_private_material',
-  'debug_artifact',
-  'shell_snapshot'
-];
+const IDENT_RX = /[A-Za-z_$][A-Za-z0-9_$]*/g;
+const WORD_AT_CURSOR = /[A-Za-z_$][A-Za-z0-9_$]*$/;
+const IMPORT_CTX = /(?:require\s*\(\s*|(?:import|from)\s+[^'"]*)['"]([^'"]*)$/;
 
 class PredictiveTypingProvider {
   /**
-   * @param {string} projectRoot
-   * @param {() => string} getPkClient   - returns resolved pk-client path
-   * @param {() => string} getPkMemory   - returns resolved pk-memory path
-   * @param {() => string} getNode       - returns node interpreter
-   * @param {(msg: string) => void} log  - append to output channel
+   * @param {{getProjectRoot: () => string, getReportRoot: () => string, log: (m:string)=>void}} deps
    */
-  constructor(projectRoot, getPkClient, getPkMemory, getNode, log) {
-    this.projectRoot = projectRoot;
-    this._getPkClient = getPkClient;
-    this._getPkMemory = getPkMemory;
-    this._getNode = getNode;
-    this._log = log;
-
-    /** @type {Map<string, {ts: number, items: vscode.InlineCompletionItem[]}>} */
-    this._cache = new Map();
+  constructor(deps) {
+    this._getProjectRoot = deps.getProjectRoot;
+    this._getReportRoot = deps.getReportRoot;
+    this._log = deps.log || (() => {});
+    const { PredictiveIndex } = require('./predictiveIndex');
+    this._index = new PredictiveIndex(this._log);
+    this._indexTried = false;
+    // per-document identifier cache: uri → {version, ids:Set}
+    this._docCache = new Map();
     this._disposed = false;
   }
 
   // ── VS Code API ────────────────────────────────────────────────────────────
 
-  /**
-   * Called by VS Code on every keystroke (debounced internally by the editor).
-   * @param {vscode.TextDocument} document
-   * @param {vscode.Position} position
-   * @param {vscode.InlineCompletionContext} _context
-   * @param {vscode.CancellationToken} token
-   * @returns {Promise<vscode.InlineCompletionList>}
-   */
-  async provideInlineCompletionItems(document, position, _context, token) {
+  provideInlineCompletionItems(document, position, _context, _token) {
     if (this._disposed) return { items: [] };
-
     const cfg = vscode.workspace.getConfiguration('planekey');
     if (!cfg.get('predictive.enabled', true)) return { items: [] };
 
-    const line = document.lineAt(position).text.substring(0, position.character);
-    const prefix = line.trimStart();
-    if (prefix.length < 3) return { items: [] }; // too short to be useful
+    this._ensureIndex(cfg);
 
-    const cacheKey = `${document.uri.fsPath}::${prefix}`;
-    const ttlMs = (cfg.get('cache.ttl', 30)) * 1_000;
-    const cached = this._cache.get(cacheKey);
-    if (cached && Date.now() - cached.ts < ttlMs) {
-      return { items: cached.items };
+    const linePrefix = document.lineAt(position.line).text.slice(0, position.character);
+    const maxItems = cfg.get('predictive.maxSuggestions', 5);
+
+    // 1) Import-path context: complete inside require('…') / import … '…'
+    const imp = linePrefix.match(IMPORT_CTX);
+    if (imp) {
+      const partial = imp[1];
+      const startCol = position.character - partial.length;
+      const range = new vscode.Range(position.line, startCol, position.line, position.character);
+      const items = this._index.queryImports(partial, maxItems)
+        .filter(s => s.text !== partial)
+        .map(s => new vscode.InlineCompletionItem(s.text, range));
+      return { items };
     }
 
-    const [memoryItems, clientItems] = await Promise.all([
-      this._queryPkMemory(prefix, token),
-      this._queryPkClient(prefix, token)
-    ]);
+    // 2) Identifier completion at the word under the cursor.
+    const wm = linePrefix.match(WORD_AT_CURSOR);
+    const word = wm ? wm[0] : '';
+    const minPrefix = cfg.get('predictive.minPrefix', 2);
+    if (word.length < minPrefix) return { items: [] };
 
-    const raw = [...memoryItems, ...clientItems];
-    const items = this._dedupe(raw)
-      .filter(s => !this._isBlocked(s))
-      .slice(0, MAX_SUGGESTIONS)
-      .map(s => new vscode.InlineCompletionItem(
-        s.text,
-        new vscode.Range(position, position)
-      ));
+    const startCol = position.character - word.length;
+    const range = new vscode.Range(position.line, startCol, position.line, position.character);
 
-    this._cache.set(cacheKey, { ts: Date.now(), items });
-    return { items };
-  }
+    const seen = new Set([word]);
+    const out = [];
 
-  // ── pk-memory ──────────────────────────────────────────────────────────────
-
-  /**
-   * Calls `pk-memory memory suggest <prefix> --root <projectRoot> --json`
-   * Falls back gracefully if pk-memory doesn't support that verb yet.
-   */
-  async _queryPkMemory(prefix, token) {
-    try {
-      const out = await this._run(
-        this._getPkMemory(),
-        ['memory', 'suggest', prefix, '--root', this.projectRoot, '--json'],
-        token
-      );
-      if (!out) return [];
-      const parsed = JSON.parse(out);
-      // Expected shape: [{text, canonScore, signals}] or {suggestions: [...]}
-      const arr = Array.isArray(parsed) ? parsed
-        : Array.isArray(parsed.suggestions) ? parsed.suggestions
-        : [];
-      const minScore = vscode.workspace.getConfiguration('planekey').get('memory.minCanonScore', 0.5);
-      return arr
-        .filter(s => typeof s.text === 'string' && s.text.trim())
-        .filter(s => (s.canonScore ?? 1) >= minScore)
-        .map(s => ({ text: s.text, signals: s.signals || [] }));
-    } catch (_) {
-      return [];
+    // Report-backed (canon-ranked) suggestions first.
+    for (const s of this._index.query(word, maxItems)) {
+      if (seen.has(s.text)) continue;
+      seen.add(s.text);
+      out.push(new vscode.InlineCompletionItem(s.text, range));
+      if (out.length >= maxItems) break;
     }
-  }
 
-  // ── pk-client ──────────────────────────────────────────────────────────────
-
-  /**
-   * Calls `pk-client coherence --json` to get live grounding context,
-   * then extracts short pattern suggestions from the output.
-   * Also tries `pk-client trust state --json` for trust-gated patterns.
-   */
-  async _queryPkClient(prefix, token) {
-    try {
-      const cfg = vscode.workspace.getConfiguration('planekey');
-      if (!cfg.get('db.enabled', true)) return [];
-
-      const out = await this._run(
-        this._getPkClient(),
-        ['coherence', '--json'],
-        token
-      );
-      if (!out) return [];
-
-      let parsed;
-      try { parsed = JSON.parse(out); } catch (_) { return []; }
-
-      // Coherence pack shape: { patterns: [{text, risk, signals}] }
-      const patterns = Array.isArray(parsed.patterns) ? parsed.patterns
-        : Array.isArray(parsed) ? parsed
-        : [];
-
-      const maxRisk = cfg.get('memory.maxRiskScore', 30);
-      return patterns
-        .filter(p => typeof p.text === 'string' && p.text.trim())
-        .filter(p => (p.risk ?? 0) <= maxRisk)
-        // Only return patterns whose text starts with or contains the prefix
-        .filter(p => {
-          const t = p.text.toLowerCase();
-          const pf = prefix.toLowerCase();
-          return t.startsWith(pf) || t.includes(pf);
-        })
-        .map(p => ({ text: p.text, signals: p.signals || [] }));
-    } catch (_) {
-      return [];
-    }
-  }
-
-  // ── helpers ────────────────────────────────────────────────────────────────
-
-  _isBlocked(suggestion) {
-    const cfg = vscode.workspace.getConfiguration('planekey');
-    const excluded = cfg.get('memory.excludeSignals', BLOCKED_SIGNALS);
-    return (suggestion.signals || []).some(sig => excluded.includes(sig));
-  }
-
-  _dedupe(items) {
-    const seen = new Set();
-    return items.filter(i => {
-      if (seen.has(i.text)) return false;
-      seen.add(i.text);
-      return true;
-    });
-  }
-
-  /**
-   * Spawn a tool and return its stdout, or '' on timeout/error.
-   * Respects the VS Code cancellation token.
-   */
-  _run(tool, args, token) {
-    return new Promise((resolve) => {
-      let cmd, cmdArgs;
-      if (typeof tool === 'string' && tool.toLowerCase().endsWith('.js')) {
-        cmd = this._getNode();
-        cmdArgs = [tool, ...args];
-      } else {
-        cmd = tool;
-        cmdArgs = args;
+    // Blend in the current document's own identifiers (recency / fresh code).
+    if (out.length < maxItems) {
+      const wl = word.toLowerCase();
+      for (const id of this._documentIdentifiers(document)) {
+        if (out.length >= maxItems) break;
+        if (seen.has(id)) continue;
+        if (id.toLowerCase().startsWith(wl)) { seen.add(id); out.push(new vscode.InlineCompletionItem(id, range)); }
       }
+    }
 
-      const child = cp.execFile(
-        cmd, cmdArgs,
-        { cwd: this.projectRoot, maxBuffer: 2 * 1024 * 1024, windowsHide: true, timeout: TOOL_TIMEOUT_MS },
-        (err, stdout) => resolve(err ? '' : (stdout || '').trim())
-      );
-
-      child.on('error', () => resolve(''));
-
-      if (token) {
-        token.onCancellationRequested(() => {
-          try { child.kill(); } catch (_) {}
-          resolve('');
-        });
-      }
-    });
+    return { items: out };
   }
 
-  invalidateCache() {
-    this._cache.clear();
+  // ── index lifecycle ─────────────────────────────────────────────────────────
+
+  _ensureIndex(_cfg) {
+    if (this._index.isLoaded || this._indexTried) return;
+    this._indexTried = true;
+    try { this._index.load(this._getReportRoot()); }
+    catch (e) { this._log('[Predictive] index load failed: ' + e.message); }
   }
 
-  onIncidentChanged(_doc) {
-    // Operator incident closed → clear cache so next keystroke re-queries
-    this._cache.clear();
+  /** Force a reload from the newest reports (called after a snapshot / index build). */
+  reloadIndex() {
+    this._indexTried = false;
+    this._index.clear();
+    try { this._index.load(this._getReportRoot()); this._indexTried = true; }
+    catch (e) { this._log('[Predictive] index reload failed: ' + e.message); }
   }
 
-  dispose() {
-    this._disposed = true;
-    this._cache.clear();
+  stats() { return this._index.stats(); }
+
+  // ── current-document identifiers ─────────────────────────────────────────────
+
+  _documentIdentifiers(document) {
+    const key = document.uri.toString();
+    const cached = this._docCache.get(key);
+    if (cached && cached.version === document.version) return cached.ids;
+    const ids = new Set();
+    const text = document.getText();
+    let m;
+    IDENT_RX.lastIndex = 0;
+    while ((m = IDENT_RX.exec(text))) { if (m[0].length >= 3 && m[0].length <= 60) ids.add(m[0]); }
+    this._docCache.set(key, { version: document.version, ids });
+    return ids;
   }
+
+  // ── compatibility hooks used by extension.js ─────────────────────────────────
+
+  invalidateCache() { this._docCache.clear(); }
+  onIncidentChanged() { this._docCache.clear(); }
+  dispose() { this._disposed = true; this._docCache.clear(); this._index.clear(); }
 }
 
 module.exports = { PredictiveTypingProvider };
